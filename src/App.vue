@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, provide, readonly, watch } from 'vue'
 import ConfigurationPanel from './components/ConfigurationPanel.vue'
-import VisualizationPanel from './components/VisualizationPanel.vue'
+// import VisualizationPanel from './components/VisualizationPanel.vue'
 
 interface CustomFunction {
   formula: string
@@ -322,8 +322,8 @@ const handleOpenFile = async () => {
       <!-- Left Panel -->
       <ConfigurationPanel :number-of-wells="numberOfWells" />
 
-      <!-- Right Panel -->
-      <VisualizationPanel />
+      <!--&lt;!&ndash; Right Panel &ndash;&gt;-->
+      <!--<VisualizationPanel />-->
     </div>
   </div>
 </template>

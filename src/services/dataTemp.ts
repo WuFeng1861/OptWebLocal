@@ -1,11 +1,35 @@
 import {ref} from 'vue';
 import {CostContourData, CurvesData} from '../utils/calcData';
-import {ContourData1, ContourData2, ContourData3, ContourData4, ContourData5} from './testData/contourData1_5';
-import {ContourData10, ContourData6, ContourData7, ContourData8, ContourData9} from './testData/contourData6_10';
-import {ContourData11, ContourData12, ContourData13, ContourData14, ContourData15} from './testData/contourData11_15';
-import {ContourData16, ContourData17, ContourData18, ContourData19, ContourData20} from './testData/contourData16_20';
-import {ContourData21, ContourData22, ContourData23, ContourData24, ContourData25} from './testData/contourData21_25';
-import {ContourData26, ContourData27, ContourData28, ContourData29, ContourData30} from './testData/contourData26_30';
+import {ContourData1} from './testData/ContourData-1';
+import {ContourData2} from './testData/ContourData-2';
+import {ContourData3} from './testData/ContourData-3';
+import {ContourData4} from './testData/ContourData-4';
+import {ContourData5} from './testData/ContourData-5';
+import {ContourData6} from './testData/ContourData-6';
+import {ContourData7} from './testData/ContourData-7';
+import {ContourData8} from './testData/ContourData-8';
+import {ContourData9} from './testData/ContourData-9';
+import {ContourData10} from './testData/ContourData-10';
+import {ContourData11} from './testData/ContourData-11';
+import {ContourData12} from './testData/ContourData-12';
+import {ContourData13} from './testData/ContourData-13';
+import {ContourData14} from './testData/ContourData-14';
+import {ContourData15} from './testData/ContourData-15';
+import {ContourData16} from './testData/ContourData-16';
+import {ContourData17} from './testData/ContourData-17';
+import {ContourData18} from './testData/ContourData-18';
+import {ContourData19} from './testData/ContourData-19';
+import {ContourData20} from './testData/ContourData-20';
+import {ContourData21} from './testData/ContourData-21';
+import {ContourData22} from './testData/ContourData-22';
+import {ContourData23} from './testData/ContourData-23';
+import {ContourData24} from './testData/ContourData-24';
+import {ContourData25} from './testData/ContourData-25';
+import {ContourData26} from './testData/ContourData-26';
+import {ContourData27} from './testData/ContourData-27';
+import {ContourData28} from './testData/ContourData-28';
+import {ContourData29} from './testData/ContourData-29';
+import {ContourData30} from './testData/ContourData-30';
 import {lineData1} from './testData/lineData-1';
 import {lineData2} from './testData/lineData-2';
 import {lineData3} from './testData/lineData-3';
@@ -37,6 +61,9 @@ import {lineData28} from './testData/lineData-28';
 import {lineData29} from './testData/lineData-29';
 import {lineData30} from './testData/lineData-30';
 
+let wellNum = 30;
+let siteNum = 0;
+let SiteData: number[][] = [];
 
 const ContourDataObj: { [key: string]: CostContourData } = {
   '0': ContourData1,
@@ -105,12 +132,20 @@ const CurvesDataObj: { [key: string]: CurvesData } = {
 
 const ContourIndexListRef = ref<{ [key: number]: boolean }>({});
 const CurvesIndexListRef = ref<{ [key: number]: boolean }>({});
-let SiteData: number[][] = [];
+
 
 for (let i = 0; i < 30; i++) {
   ContourIndexListRef.value[i] = true;
   CurvesIndexListRef.value[i] = true;
 }
+
+export const getWellNum = () => {
+  return wellNum;
+};
+
+export const getSiteNum = () => {
+  return siteNum;
+};
 
 export const getContourShowData = () => {
   // 遍历ContourIndexList返回新的数组
@@ -138,14 +173,6 @@ export const getCurvesShowData = () => {
   return result;
 };
 
-export const changeContourShow = (index: number, isDelete: boolean) => {
-  ContourIndexListRef.value[index] = !isDelete;
-};
-
-export const changeCurvesShow = (index: number, isDelete: boolean) => {
-  CurvesIndexListRef.value[index] = !isDelete;
-};
-
 export const getContourIndexListRef = () => {
   return ContourIndexListRef;
 };
@@ -162,11 +189,11 @@ export const getSiteData = () => {
   let resultObj = {};
   let keys = Object.keys(CurvesIndexListRef.value);
   for (let i = 0; i < keys.length; i++) {
-    let key = keys[i];
+    let key = Number(keys[i]);
     let x = Number(CurvesDataObj[key]['CURVES']['EAST'][0]);
     let y = Number(CurvesDataObj[key]['CURVES']['NORTH'][0]);
     if (!resultObj[`${x}-${y}`]) {
-      resultObj = [key];
+      resultObj[`${x}-${y}`] = [key];
     } else {
       resultObj[`${x}-${y}`].push(key);
     }
@@ -176,7 +203,40 @@ export const getSiteData = () => {
     result.push(resultObj[key]);
   }
   SiteData = result;
+  siteNum = result.length;
   return result;
+};
+
+export const changeContourShow = (index: number, isDelete: boolean) => {
+  ContourIndexListRef.value[index] = !isDelete;
+};
+
+export const changeCurvesShow = (index: number, isDelete: boolean) => {
+  CurvesIndexListRef.value[index] = !isDelete;
+};
+
+export const changeWellShow = (index: number, isDelete: boolean) => {
+  changeContourShow(index, isDelete);
+  changeCurvesShow(index, isDelete);
+};
+
+export const changeAllDataShow = (isDelete: boolean) => {
+  for (let i = 0; i < wellNum; i++) {
+    changeContourShow(i, isDelete);
+    changeCurvesShow(i, isDelete);
+  }
+}
+
+export const changeAllCurvesShow = (isDelete: boolean) => {
+  for (let i = 0; i < wellNum; i++) {
+    changeCurvesShow(i, isDelete);
+  }
+};
+
+export const changeAllContourShow = (isDelete: boolean) => {
+  for (let i = 0; i < wellNum; i++) {
+    changeContourShow(i, isDelete);
+  }
 };
 
 export const changeSiteContourShow = (index: number, isDelete: boolean) => {
@@ -198,4 +258,7 @@ export const changeSiteShow = (index: number, isDelete: boolean) => {
   changeSiteCurvesShow(index, isDelete);
 };
 
+
+// init all data 初始化所有数据
+getSiteData()
 
