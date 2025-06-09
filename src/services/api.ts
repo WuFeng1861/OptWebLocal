@@ -158,7 +158,7 @@ export function buildRequestData(
         "DESCRIPTION": "formation constraints in special layer(s)",
         "UNIT": "",
         "VALUE": null
-      },
+      }, 
       "cst_Site": {
         "DESCRIPTION": "drill site preparation cost",
         "UNIT": "",
