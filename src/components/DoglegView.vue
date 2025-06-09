@@ -63,8 +63,8 @@ const formatRadiusValue = (obj: any, key: string) => {
         <thead>
           <tr class="bg-gray-50 border-b">
             <th class="w-12 py-2 px-2 text-center font-medium border-r">#</th>
-            <th class="w-1/2 py-2 px-2 text-center font-medium border-r">Dogleg (°/30m)</th>
-            <th class="w-1/2 py-2 px-2 text-center font-medium">Radius (m)</th>
+            <th class="w-1/2 py-2 px-2 text-center font-medium border-r">dogleg (°/30m)</th>
+            <th class="w-1/2 py-2 px-2 text-center font-medium">radius (m)</th>
           </tr>
         </thead>
         <tbody>
