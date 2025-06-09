@@ -8,15 +8,15 @@ const wellSchema = Joi.object({
   targetPoints: Joi.array().items(
     Joi.object({
       x: Joi.string().pattern(/^-?\d+(\.\d{1,2})?$/).required(), // 最多2位小数
-      y: Joi.string().pattern(/^-?\d+(\.\d{1,2})?$/).required(),
-      z: Joi.string().pattern(/^-?\d+(\.\d{1,2})?$/).required()
+      y: Joi.string().pattern(/^-?\d+(\.\d{1,2})?$/).required(), // 最多2位小数
+      z: Joi.string().pattern(/^-?\d+(\.\d{1,2})?$/).required()  // 最多2位小数
     })
   ).required(),
   entryDirections: Joi.array().items(
     Joi.object({
-      x: Joi.string().pattern(/^-?\d+(\.\d{1,2})?$/).required(),
-      y: Joi.string().pattern(/^-?\d+(\.\d{1,2})?$/).required(),
-      z: Joi.string().pattern(/^-?\d+(\.\d{1,2})?$/).required()
+      x: Joi.string().pattern(/^-?\d+(\.\d{1,2})?$/).required(), // 最多2位小数
+      y: Joi.string().pattern(/^-?\d+(\.\d{1,2})?$/).required(), // 最多2位小数
+      z: Joi.string().pattern(/^-?\d+(\.\d{1,2})?$/).required()  // 最多2位小数
     })
   ).required(),
   kickoffPoints: Joi.array().items(
@@ -44,7 +44,8 @@ const wellSchema = Joi.object({
 // 格式化数值为两位小数
 const formatToTwoDecimals = (value) => {
   const num = parseFloat(value);
-  return isNaN(num) ? '0.00' : num.toFixed(2);
+  // 保留最多2位小数，去除末尾的0
+  return isNaN(num) ? '0' : parseFloat(num.toFixed(2)).toString();
 };
 
 // 处理井数据，确保精度
