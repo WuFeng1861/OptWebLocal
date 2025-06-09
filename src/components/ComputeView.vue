@@ -112,19 +112,6 @@ watchEffect(() => {
   }
 })
 
-// // 根据problemType动态计算应该显示的面板
-// const availablePanels = computed(() => {
-//   const panels = ['cost-contour']
-//
-//   if (computeState.value.problemType === 'K-Sites-N-Wells') {
-//     panels.push('optimal-layout')
-//   } else if (computeState.value.problemType === '1-Site-N-Wells') {
-//     panels.push('optimal-site')
-//   }
-//
-//   return panels
-// })
-
 // 控制折叠面板的展开状态，默认全部展开
 const activeNames = ref(['cost-contour', 'optimal-layout', 'optimal-site'])
 
