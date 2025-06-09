@@ -83,7 +83,7 @@ const entryDirections = ref<Point[]>([{ x: '0', y: '0', z: '0' }])
 const kickoffPoints = ref<KickoffPoint[]>([{
   pkx: 0,
   pky: 0,
-  pkz: -300.00
+  pkz: -500.00
 }])
 
 const kickoffDirections = ref<KickoffDirection[]>([{
@@ -190,7 +190,7 @@ provide('updateNumberOfWells', (value: number) => {
     kickoffPoints.value.push({
       pkx: 0,
       pky: 0,
-      pkz: -300.00
+      pkz: -500.00
     })
   }
   while (kickoffPoints.value.length > value) {
