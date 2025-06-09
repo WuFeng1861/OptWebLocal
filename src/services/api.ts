@@ -167,12 +167,12 @@ export function buildRequestData(
       "slot": {
         "DESCRIPTION": "available slot numbers in one cluster",
         "UNIT": "",
-        "VALUE": computeState.clusterSizes.map(item => item.size)
+        "VALUE": computeState.clusterSizes.map(item => item.size).reverse()
       },
       "cst_WH": {
         "DESCRIPTION": "cost of subsea wellhead equipment of different slots, corresponding with slot",
         "UNIT": "",
-        "VALUE": computeState.clusterSizes.map(item => item.cost)
+        "VALUE": computeState.clusterSizes.map(item => item.cost).reverse()
       },
       "cluster_min": {
         "DESCRIPTION": "minimum number of clusters(drill sites)",
