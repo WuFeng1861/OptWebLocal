@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, watch, ref, computed } from 'vue'
+import { inject, watch, ref, computed, watchEffect } from 'vue'
 import { buildRequestData, sendComputeRequest } from '../services/api'
 
 const computeState = inject<Ref<{
@@ -29,6 +29,89 @@ const entryDirections = inject<Ref<Array<{x: string, y: string, z: string}>>>('e
 const kickoffPoints = inject<Ref<Array<{pkx: number, pky: number, pkz: number}>>>('kickoffPoints')!
 const kickoffDirections = inject<Ref<Array<{vkx: number, vky: number, vkz: number}>>>('kickoffDirections')!
 const doglegPoints = inject<Ref<Array<{dogleg: number, radius: number}>>>('doglegPoints')!
+
+// 计算X Range的自动值
+const calculateAutoXRange = () => {
+  const ranges: number[] = []
+  
+  for (let i = 0; i < targetPoints.value.length; i++) {
+    const targetPoint = targetPoints.value[i]
+    const doglegPoint = doglegPoints.value[i]
+    
+    if (targetPoint && doglegPoint) {
+      const p2x = parseFloat(targetPoint.x)
+      const radius = doglegPoint.radius
+      
+      if (!isNaN(p2x) && !isNaN(radius)) {
+        const minRange = p2x - radius - 1000
+        const maxRange = p2x + radius + 1000
+        ranges.push(minRange, maxRange)
+      }
+    }
+  }
+  
+  if (ranges.length > 0) {
+    const minValue = Math.min(...ranges)
+    const maxValue = Math.max(...ranges)
+    
+    // 保留2位小数
+    const formattedMin = Math.floor(minValue * 100) / 100
+    const formattedMax = Math.floor(maxValue * 100) / 100
+    
+    return [formattedMin, formattedMax]
+  }
+  
+  return [0, 0]
+}
+
+// 计算Y Range的自动值
+const calculateAutoYRange = () => {
+  const ranges: number[] = []
+  
+  for (let i = 0; i < targetPoints.value.length; i++) {
+    const targetPoint = targetPoints.value[i]
+    const doglegPoint = doglegPoints.value[i]
+    
+    if (targetPoint && doglegPoint) {
+      const p2y = parseFloat(targetPoint.y)
+      const radius = doglegPoint.radius
+      
+      if (!isNaN(p2y) && !isNaN(radius)) {
+        const minRange = p2y - radius - 1000
+        const maxRange = p2y + radius + 1000
+        ranges.push(minRange, maxRange)
+      }
+    }
+  }
+  
+  if (ranges.length > 0) {
+    const minValue = Math.min(...ranges)
+    const maxValue = Math.max(...ranges)
+    
+    // 保留2位小数
+    const formattedMin = Math.floor(minValue * 100) / 100
+    const formattedMax = Math.floor(maxValue * 100) / 100
+    
+    return [formattedMin, formattedMax]
+  }
+  
+  return [0, 0]
+}
+
+// 监听相关数据变化，自动更新范围值
+watchEffect(() => {
+  if (computeState.value.ranges.x.mode === 'Auto') {
+    const autoRange = calculateAutoXRange()
+    computeState.value.ranges.x.value = JSON.stringify(autoRange)
+  }
+})
+
+watchEffect(() => {
+  if (computeState.value.ranges.y.mode === 'Auto') {
+    const autoRange = calculateAutoYRange()
+    computeState.value.ranges.y.value = JSON.stringify(autoRange)
+  }
+})
 
 // // 根据problemType动态计算应该显示的面板
 // const availablePanels = computed(() => {
@@ -110,6 +193,7 @@ watch(() => computeState.value.clusterSizes.length, (newLength) => {
                     v-model="computeState.ranges.x.value"
                     class="ml-2 border rounded px-2 py-1 w-28 text-sm"
                     :disabled="computeState.ranges.x.mode === 'Auto'"
+                    :placeholder="computeState.ranges.x.mode === 'Auto' ? computeState.ranges.x.value : '[min, max]'"
                 >
               </label>
             </div>
@@ -130,6 +214,7 @@ watch(() => computeState.value.clusterSizes.length, (newLength) => {
                     v-model="computeState.ranges.y.value"
                     class="ml-2 border rounded px-2 py-1 w-28 text-sm"
                     :disabled="computeState.ranges.y.mode === 'Auto'"
+                    :placeholder="computeState.ranges.y.mode === 'Auto' ? computeState.ranges.y.value : '[min, max]'"
                 >
               </label>
             </div>
