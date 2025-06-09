@@ -39,7 +39,6 @@ interface ComputeState {
     y: { mode: 'Auto' | 'Manual'; value: string }
     radius: { mode: 'Auto' | 'Manual'; value: string }
     resolution: { mode: 'Auto' | 'Manual'; value: string }
-    wellNo: { mode: 'All' | 'Manual'; value: string }
     initialGuess: { mode: 'Auto' | 'Manual'; value: string }
   }
 }
