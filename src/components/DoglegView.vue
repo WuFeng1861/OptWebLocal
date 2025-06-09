@@ -55,15 +55,15 @@ const formatRadiusValue = (obj: any, key: string) => {
 
 <template>
   <div class="p-4 max-h-[calc(100vh-500px)] overflow-y-auto">
-    <h2 class="text-lg font-serif mb-4 text-gray-800">狗腿度严重程度和对应的最小半径</h2>
+    <h2 class="text-lg font-serif mb-4 text-gray-800">Dogleg Severity and Corresponding Minimum Radius</h2>
 
     <div class="border rounded max-h-[400px] overflow-y-auto">
       <table class="w-full text-sm">
         <thead>
           <tr class="bg-gray-50 border-b">
             <th class="w-12 py-2 px-2 text-center font-medium border-r">#</th>
-            <th class="w-1/2 py-2 px-2 text-center font-medium border-r">狗腿度 (°/30m)</th>
-            <th class="w-1/2 py-2 px-2 text-center font-medium">半径(m)</th>
+            <th class="w-1/2 py-2 px-2 text-center font-medium border-r">Dogleg (°/30m)</th>
+            <th class="w-1/2 py-2 px-2 text-center font-medium">Radius (m)</th>
           </tr>
         </thead>
         <tbody>
@@ -75,7 +75,7 @@ const formatRadiusValue = (obj: any, key: string) => {
                 v-model="point.dogleg"
                 @blur="formatDoglegValue(point, 'dogleg')"
                 class="w-full px-1.5 py-1 border rounded text-right"
-                placeholder="例如: 2.0 或 2.0,3.0,4.0"
+                placeholder="e.g.: 2.0 or 2.0,3.0,4.0"
               >
             </td>
             <td class="py-1.5 px-2">
