@@ -9,6 +9,7 @@ const doglegPoints = inject<Ref<Array<{
 
 // 格式化dogleg值，支持单个数字或数组格式，保留最多2位小数
 const formatDoglegValue = (obj: any, key: string) => {
+  console.log(obj, key);
   const value = obj[key]
   if (typeof value === 'string') {
     // 首先将中文逗号替换为英文逗号
