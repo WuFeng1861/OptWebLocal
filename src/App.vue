@@ -164,7 +164,7 @@ provide('updateNumberOfWells', (value: number) => {
 
   // Update arrays when number of wells changes
   while (targetPoints.value.length < value) {
-    targetPoints.value.push({ x: '', y: '', z: '' })
+    targetPoints.value.push({ x: '0', y: '0', z: '0' })
   }
   while (targetPoints.value.length > value) {
     targetPoints.value.pop()
