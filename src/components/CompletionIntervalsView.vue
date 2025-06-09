@@ -13,14 +13,8 @@ const activeNames = ref(['wells', 'target', 'entry'])
 const formatToTwoDecimals = (obj: any, key: string) => {
   const value = parseFloat(obj[key])
   if (!isNaN(value)) {
-    // 直接截取小数后两位
-    const str = value.toString()
-    const dotIndex = str.indexOf('.')
-    if (dotIndex !== -1 && str.length > dotIndex + 3) {
-      obj[key] = str.substring(0, dotIndex + 3)
-    } else {
-      obj[key] = str
-    }
+    // 保留最多2位小数，去除末尾的0
+    obj[key] = parseFloat(value.toFixed(2)).toString()
   }
 }
 
