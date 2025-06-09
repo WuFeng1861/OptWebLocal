@@ -115,11 +115,6 @@ watchEffect(() => {
 // 控制折叠面板的展开状态，默认全部展开
 const activeNames = ref(['cost-contour', 'optimal-layout', 'optimal-site'])
 
-// 监听problemType变化，更新activeNames
-// watch(() => computeState.value.problemType, () => {
-//   activeNames.value = [...availablePanels.value]
-// }, { immediate: true })
-
 const sendRequest = async () => {
   try {
     const data = buildRequestData(
