@@ -171,7 +171,7 @@ provide('updateNumberOfWells', (value: number) => {
   }
 
   while (entryDirections.value.length < value) {
-    entryDirections.value.push({ x: '', y: '', z: '' })
+    entryDirections.value.push({ x: '0', y: '0', z: '0' })
   }
   while (entryDirections.value.length > value) {
     entryDirections.value.pop()
