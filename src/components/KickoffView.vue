@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, inject } from 'vue'
-import { ElMessage } from 'element-plus'
 
 const numberOfWells = inject<Readonly<Ref<number>>>('numberOfWells')!
 const kickoffPoints = inject<Ref<Array<{
@@ -16,22 +15,6 @@ const kickoffDirections = inject<Ref<Array<{
 
 // 控制折叠面板的展开状态，默认全部展开
 const activeNames = ref(['depth', 'direction'])
-
-// 验证并格式化数值输入
-const validateAndFormatNumber = (obj: any, key: string, defaultValue: number = 0) => {
-  const value = parseFloat(obj[key])
-  if (!isNaN(value)) {
-    obj[key] = value
-  } else if (obj[key] !== '' && obj[key] !== defaultValue.toString()) {
-    ElMessage({
-      message: `Invalid value: ${obj[key]}, please enter a valid number`,
-      type: 'error',
-      showClose: true,
-      duration: 3000
-    })
-    obj[key] = defaultValue
-  }
-}
 </script>
 
 <template>
@@ -56,7 +39,6 @@ const validateAndFormatNumber = (obj: any, key: string, defaultValue: number = 0
                   <input
                     type="number"
                     v-model="point.pkx"
-                    @blur="validateAndFormatNumber(point, 'pkx', 0)"
                     step="0.01"
                   >
                 </td>
@@ -64,7 +46,6 @@ const validateAndFormatNumber = (obj: any, key: string, defaultValue: number = 0
                   <input
                     type="number"
                     v-model="point.pky"
-                    @blur="validateAndFormatNumber(point, 'pky', 0)"
                     step="0.01"
                   >
                 </td>
@@ -72,7 +53,6 @@ const validateAndFormatNumber = (obj: any, key: string, defaultValue: number = 0
                   <input
                     type="number"
                     v-model="point.pkz"
-                    @blur="validateAndFormatNumber(point, 'pkz', -500)"
                     step="0.01"
                   >
                 </td>
@@ -101,7 +81,6 @@ const validateAndFormatNumber = (obj: any, key: string, defaultValue: number = 0
                   <input
                     type="number"
                     v-model="direction.vkx"
-                    @blur="validateAndFormatNumber(direction, 'vkx', 0)"
                     step="0.01"
                   >
                 </td>
@@ -109,7 +88,6 @@ const validateAndFormatNumber = (obj: any, key: string, defaultValue: number = 0
                   <input
                     type="number"
                     v-model="direction.vky"
-                    @blur="validateAndFormatNumber(direction, 'vky', 0)"
                     step="0.01"
                   >
                 </td>
@@ -117,7 +95,6 @@ const validateAndFormatNumber = (obj: any, key: string, defaultValue: number = 0
                   <input
                     type="number"
                     v-model="direction.vkz"
-                    @blur="validateAndFormatNumber(direction, 'vkz', -1)"
                     step="0.01"
                   >
                 </td>

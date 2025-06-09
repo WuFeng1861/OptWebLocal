@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, inject, watch } from 'vue'
-import { ElMessage } from 'element-plus'
 
 const numberOfWells = inject<Readonly<Ref<number>>>('numberOfWells')!
 const doglegPoints = inject<Ref<Array<{
@@ -21,26 +20,11 @@ const formatDoglegValue = (obj: any, key: string) => {
       const numbers = normalizedValue.split(',').map(num => {
         const parsed = parseFloat(num.trim())
         if (!isNaN(parsed)) {
-          if (parsed < 0) {
-            ElMessage({
-              message: '狗腿度值不能为负数',
-              type: 'error',
-              showClose: true,
-              duration: 3000
-            })
-            return '0'
-          }
           // 使用Math.floor保留最多2位小数
           const multiplied = parsed * 100
           const floored = Math.floor(multiplied) / 100
           return floored.toString()
         }
-        ElMessage({
-          message: `Invalid dogleg value: ${num.trim()}, please enter a valid number`,
-          type: 'error',
-          showClose: true,
-          duration: 3000
-        })
         return num.trim()
       })
       obj[key] = numbers.join(',')
@@ -48,28 +32,10 @@ const formatDoglegValue = (obj: any, key: string) => {
       // 处理单个数字格式
       const parsed = parseFloat(normalizedValue)
       if (!isNaN(parsed)) {
-        if (parsed < 0) {
-          ElMessage({
-            message: 'Dogleg value cannot be negative',
-            type: 'error',
-            showClose: true,
-            duration: 3000
-          })
-          obj[key] = '0'
-          return
-        }
         // 使用Math.floor保留最多2位小数
         const multiplied = parsed * 100
         const floored = Math.floor(multiplied) / 100
         obj[key] = floored.toString()
-      } else if (normalizedValue !== '') {
-        ElMessage({
-          message: `Invalid dogleg value: ${normalizedValue}, please enter a valid number or array format`,
-          type: 'error',
-          showClose: true,
-          duration: 3000
-        })
-        obj[key] = '3'
       }
     }
   }
@@ -79,43 +45,25 @@ const formatDoglegValue = (obj: any, key: string) => {
 const formatRadiusValue = (obj: any, key: string) => {
   const value = parseFloat(obj[key])
   if (!isNaN(value)) {
-    if (value <= 0) {
-      ElMessage({
-        message: 'Radius value must be greater than 0',
-        type: 'error',
-        showClose: true,
-        duration: 3000
-      })
-      obj[key] = 859.44
-      return
-    }
     // 使用Math.floor保留最多2位小数
     const multiplied = value * 100
     const floored = Math.floor(multiplied) / 100
     obj[key] = floored
-  } else {
-    ElMessage({
-      message: 'Invalid radius value, please enter a valid positive number',
-      type: 'error',
-      showClose: true,
-      duration: 3000
-    })
-    obj[key] = 859.44
   }
 }
 </script>
 
 <template>
   <div class="p-4 max-h-[calc(100vh-500px)] overflow-y-auto">
-    <h2 class="text-lg font-serif mb-4 text-gray-800">Dogleg Severity & Corresponding Minimum Radius</h2>
+    <h2 class="text-lg font-serif mb-4 text-gray-800">狗腿度严重程度和对应的最小半径</h2>
 
     <div class="border rounded max-h-[400px] overflow-y-auto">
       <table class="w-full text-sm">
         <thead>
           <tr class="bg-gray-50 border-b">
             <th class="w-12 py-2 px-2 text-center font-medium border-r">#</th>
-            <th class="w-1/2 py-2 px-2 text-center font-medium border-r">dogleg (°/30m)</th>
-            <th class="w-1/2 py-2 px-2 text-center font-medium">radius(m)</th>
+            <th class="w-1/2 py-2 px-2 text-center font-medium border-r">狗腿度 (°/30m)</th>
+            <th class="w-1/2 py-2 px-2 text-center font-medium">半径(m)</th>
           </tr>
         </thead>
         <tbody>
@@ -127,7 +75,7 @@ const formatRadiusValue = (obj: any, key: string) => {
                 v-model="point.dogleg"
                 @blur="formatDoglegValue(point, 'dogleg')"
                 class="w-full px-1.5 py-1 border rounded text-right"
-                placeholder="example: 2.0 or 2.0,3.0,4.0"
+                placeholder="例如: 2.0 或 2.0,3.0,4.0"
               >
             </td>
             <td class="py-1.5 px-2">

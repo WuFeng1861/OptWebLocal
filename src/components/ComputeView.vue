@@ -1,10 +1,26 @@
 <script setup lang="ts">
 import { inject, watch, ref, computed } from 'vue'
-import { ElMessage } from 'element-plus'
-// import { buildRequestData, sendComputeRequest } from '../services/api'
+import { buildRequestData, sendComputeRequest } from '../services/api'
 
 const computeState = inject<Ref<{
-  computeState: any;
+  problemType: string;
+  cluster_min: number;
+  cluster_max: number;
+  sitePreparationCost: number;
+  numberOfClusterSizes: number;
+  clusterSizes: Array<{ size: number; cost: number }>;
+  economicZoneThreshold: number;
+  parallelComputing: boolean;
+  threadCount: number;
+  designatePosition: boolean;
+  ranges: {
+    x: { mode: 'Auto' | 'Manual'; value: string };
+    y: { mode: 'Auto' | 'Manual'; value: string };
+    radius: { mode: 'Auto' | 'Manual'; value: string };
+    resolution: { mode: 'Auto' | 'Manual'; value: string };
+    wellNo: { mode: 'All' | 'Manual'; value: string };
+    initialGuess: { mode: 'Auto' | 'Manual'; value: string };
+  };
 }>>('computeState')!
 
 const numberOfWells = inject<Readonly<Ref<number>>>('numberOfWells')!
@@ -12,38 +28,44 @@ const targetPoints = inject<Ref<Array<{x: string, y: string, z: string}>>>('targ
 const entryDirections = inject<Ref<Array<{x: string, y: string, z: string}>>>('entryDirections')!
 const kickoffPoints = inject<Ref<Array<{pkx: number, pky: number, pkz: number}>>>('kickoffPoints')!
 const kickoffDirections = inject<Ref<Array<{vkx: number, vky: number, vkz: number}>>>('kickoffDirections')!
-const doglegPoints = inject<Ref<Array<{dogleg: string, radius: number}>>>('doglegPoints')!
+const doglegPoints = inject<Ref<Array<{dogleg: number, radius: number}>>>('doglegPoints')!
+
+// // 根据problemType动态计算应该显示的面板
+// const availablePanels = computed(() => {
+//   const panels = ['cost-contour']
+//
+//   if (computeState.value.problemType === 'K-Sites-N-Wells') {
+//     panels.push('optimal-layout')
+//   } else if (computeState.value.problemType === '1-Site-N-Wells') {
+//     panels.push('optimal-site')
+//   }
+//
+//   return panels
+// })
 
 // 控制折叠面板的展开状态，默认全部展开
 const activeNames = ref(['cost-contour', 'optimal-layout', 'optimal-site'])
 
+// 监听problemType变化，更新activeNames
+// watch(() => computeState.value.problemType, () => {
+//   activeNames.value = [...availablePanels.value]
+// }, { immediate: true })
+
 const sendRequest = async () => {
   try {
-    // const data = buildRequestData(
-    //     numberOfWells.value,
-    //     targetPoints.value,
-    //     entryDirections.value,
-    //     kickoffPoints.value,
-    //     kickoffDirections.value,
-    //     doglegPoints.value,
-    //     computeState.value
-    // )
-    // const response = await sendComputeRequest(data)
-    // console.log('Response:', response)
-    ElMessage({
-      message: 'Compute request sent successfully',
-      type: 'success',
-      showClose: true,
-      duration: 3000
-    })
+    const data = buildRequestData(
+        numberOfWells.value,
+        targetPoints.value,
+        entryDirections.value,
+        kickoffPoints.value,
+        kickoffDirections.value,
+        doglegPoints.value,
+        computeState.value
+    )
+    const response = await sendComputeRequest(data)
+    console.log('Response:', response)
   } catch (error) {
     console.error('Error:', error)
-    ElMessage({
-      message: 'Failed to send compute request',
-      type: 'error',
-      showClose: true,
-      duration: 3000
-    })
   }
 }
 
@@ -65,32 +87,6 @@ watch(() => computeState.value.numberOfClusterSizes, (newValue) => {
 watch(() => computeState.value.clusterSizes.length, (newLength) => {
   computeState.value.numberOfClusterSizes = newLength
 })
-
-// 验证集群数量范围
-const validateClusterRange = () => {
-  if (computeState.value.cluster_min > computeState.value.cluster_max) {
-    ElMessage({
-      message: 'Minimum clusters cannot be greater than maximum clusters',
-      type: 'error',
-      showClose: true,
-      duration: 3000
-    })
-    computeState.value.cluster_min = computeState.value.cluster_max
-  }
-}
-
-// 验证手动模式下的范围值
-const validateManualRange = (rangeKey: string, rangeName: string) => {
-  const range = computeState.value.ranges[rangeKey]
-  if (range.mode === 'Manual' && !range.value.trim()) {
-    ElMessage({
-      message: `${rangeName} value cannot be empty in Manual mode`,
-      type: 'error',
-      showClose: true,
-      duration: 3000
-    })
-  }
-}
 </script>
 
 <template>
@@ -112,7 +108,6 @@ const validateManualRange = (rangeKey: string, rangeName: string) => {
                 <input
                     type="text"
                     v-model="computeState.ranges.x.value"
-                    @blur="validateManualRange('x', 'X Range')"
                     class="ml-2 border rounded px-2 py-1 w-28 text-sm"
                     :disabled="computeState.ranges.x.mode === 'Auto'"
                 >
@@ -133,7 +128,6 @@ const validateManualRange = (rangeKey: string, rangeName: string) => {
                 <input
                     type="text"
                     v-model="computeState.ranges.y.value"
-                    @blur="validateManualRange('y', 'Y Range')"
                     class="ml-2 border rounded px-2 py-1 w-28 text-sm"
                     :disabled="computeState.ranges.y.mode === 'Auto'"
                 >
@@ -154,7 +148,6 @@ const validateManualRange = (rangeKey: string, rangeName: string) => {
                 <input
                     type="text"
                     v-model="computeState.ranges.radius.value"
-                    @blur="validateManualRange('radius', 'Radius')"
                     class="ml-2 border rounded px-2 py-1 w-28 text-sm"
                     :disabled="computeState.ranges.radius.mode === 'Auto'"
                 >
@@ -175,7 +168,6 @@ const validateManualRange = (rangeKey: string, rangeName: string) => {
                 <input
                     type="text"
                     v-model="computeState.ranges.resolution.value"
-                    @blur="validateManualRange('resolution', 'Resolution')"
                     class="ml-2 border rounded px-2 py-1 w-28 text-sm"
                     :disabled="computeState.ranges.resolution.mode === 'Auto'"
                 >
@@ -208,7 +200,6 @@ const validateManualRange = (rangeKey: string, rangeName: string) => {
             <input
                 type="number"
                 v-model="computeState.cluster_min"
-                @blur="validateClusterRange"
                 min="1"
                 class="border rounded px-2 py-1 w-20 text-sm text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             >
@@ -220,7 +211,6 @@ const validateManualRange = (rangeKey: string, rangeName: string) => {
             <input
                 type="number"
                 v-model="computeState.cluster_max"
-                @blur="validateClusterRange"
                 min="1"
                 class="border rounded px-2 py-1 w-20 text-sm text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             >
@@ -251,7 +241,6 @@ const validateManualRange = (rangeKey: string, rangeName: string) => {
                 <input
                     type="text"
                     v-model="computeState.ranges.initialGuess.value"
-                    @blur="validateManualRange('initialGuess', 'Initial Guess')"
                     class="ml-2 border rounded px-2 py-1 w-28 text-sm"
                     :disabled="computeState.ranges.initialGuess.mode === 'Auto'"
                     placeholder="[x, y]"

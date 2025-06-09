@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { inject, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { inject, Ref, ref } from 'vue'
 
 const numberOfWells = inject<Readonly<Ref<number>>>('numberOfWells')!
 const targetPoints = inject<Ref<Array<{x: string, y: string, z: string}>>>('targetPoints')!
@@ -14,15 +13,10 @@ const activeNames = ref(['wells', 'target', 'entry'])
 const formatToTwoDecimals = (obj: any, key: string) => {
   const value = parseFloat(obj[key])
   if (!isNaN(value)) {
-    obj[key] = value.toFixed(2)
-  } else if (obj[key] !== '' && obj[key] !== '0') {
-    ElMessage({
-      message: `Invalid coordinate value: ${obj[key]}, please enter a valid number`,
-      type: 'error',
-      showClose: true,
-      duration: 3000
-    })
-    obj[key] = '0.00'
+    // 使用Math.floor保留最多2位小数
+    const multiplied = value * 100
+    const floored = Math.floor(multiplied) / 100
+    obj[key] = floored.toString()
   }
 }
 
@@ -30,18 +24,7 @@ const handleNumberOfWellsInput = (e: Event) => {
   const input = e.target as HTMLInputElement
   const value = input.value.replace(/[^0-9]/g, '')
   const numValue = value ? Math.max(1, parseInt(value)) : 1
-  
-  if (numValue < 1 || numValue > 100) {
-    ElMessage({
-      message: 'Number of wells must be between 1 and 100',
-      type: 'error',
-      showClose: true,
-      duration: 3000
-    })
-    updateNumberOfWells(Math.min(100, Math.max(1, numValue)))
-  } else {
-    updateNumberOfWells(numValue)
-  }
+  updateNumberOfWells(numValue)
 }
 </script>
 

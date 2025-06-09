@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, inject, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { inject, watch } from 'vue'
 
 const computeState = inject<Ref<{
   sitePreparationCost: number;
@@ -27,58 +26,6 @@ watch(() => computeState.value.numberOfClusterSizes, (newValue) => {
 watch(() => computeState.value.clusterSizes.length, (newLength) => {
   computeState.value.numberOfClusterSizes = newLength
 })
-
-// 验证站点准备成本
-const validateSitePreparationCost = () => {
-  if (computeState.value.sitePreparationCost < 0) {
-    ElMessage({
-      message: 'Site preparation cost cannot be negative',
-      type: 'error',
-      showClose: true,
-      duration: 3000
-    })
-    computeState.value.sitePreparationCost = 300
-  }
-}
-
-// 验证集群大小数量
-const validateNumberOfClusterSizes = () => {
-  if (computeState.value.numberOfClusterSizes < 1) {
-    ElMessage({
-      message: 'Number of cluster sizes must be at least 1',
-      type: 'error',
-      showClose: true,
-      duration: 3000
-    })
-    computeState.value.numberOfClusterSizes = 1
-  }
-}
-
-// 验证集群大小
-const validateClusterSize = (item: any) => {
-  if (item.size <= 0) {
-    ElMessage({
-      message: 'Cluster size must be greater than 0',
-      type: 'error',
-      showClose: true,
-      duration: 3000
-    })
-    item.size = 1.00
-  }
-}
-
-// 验证设施成本
-const validateFacilityCost = (item: any) => {
-  if (item.cost < 0) {
-    ElMessage({
-      message: 'Facility cost cannot be negative',
-      type: 'error',
-      showClose: true,
-      duration: 3000
-    })
-    item.cost = 20.00
-  }
-}
 </script>
 
 <template>
@@ -92,7 +39,6 @@ const validateFacilityCost = (item: any) => {
           <input
             type="number"
             v-model="computeState.sitePreparationCost"
-            @blur="validateSitePreparationCost"
             class="border rounded px-2 py-1 w-28 text-sm text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           >
         </div>
@@ -103,7 +49,6 @@ const validateFacilityCost = (item: any) => {
           <input
             type="number"
             v-model.number="computeState.numberOfClusterSizes"
-            @blur="validateNumberOfClusterSizes"
             min="1"
             step="1"
             class="border rounded px-2 py-1 w-28 text-sm text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -127,7 +72,6 @@ const validateFacilityCost = (item: any) => {
                   <input
                     type="number"
                     v-model="item.size"
-                    @blur="validateClusterSize(item)"
                     class="w-full px-1.5 py-1 border rounded text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     step="0.01"
                   >
@@ -136,7 +80,6 @@ const validateFacilityCost = (item: any) => {
                   <input
                     type="number"
                     v-model="item.cost"
-                    @blur="validateFacilityCost(item)"
                     class="w-full px-1.5 py-1 border rounded text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     step="0.01"
                   >
