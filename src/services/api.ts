@@ -1,210 +1,142 @@
+// API 服务文件 - 处理数据构建和请求发送
+
 import axios from 'axios'
 
-interface Point {
-  x: string
-  y: string
-  z: string
+// 构建请求数据的接口定义
+interface RequestData {
+  numberOfWells: number
+  targetPoints: Array<{x: string, y: string, z: string}>
+  entryDirections: Array<{x: string, y: string, z: string}>
+  kickoffPoints: Array<{pkx: number, pky: number, pkz: number}>
+  kickoffDirections: Array<{vkx: number, vky: number, vkz: number}>
+  doglegPoints: Array<{dogleg: string, radius: number}>
+  computeState: any
 }
 
-interface KickoffPoint {
-  pkx: number
-  pky: number
-  pkz: number
-}
-
-interface KickoffDirection {
-  vkx: number
-  vky: number
-  vkz: number
-}
-
-interface DoglegPoint {
-  dogleg: string
-  radius: number
-}
-
-interface ComputeState {
-  problemType: string
-  cluster_min: number
-  cluster_max: number
-  sitePreparationCost: number
-  numberOfClusterSizes: number
-  clusterSizes: Array<{ size: number; cost: number }>
-  economicZoneThreshold: number
-  parallelComputing: boolean
-  threadCount: number
-  designatePosition: boolean
-  ranges: {
-    x: { mode: 'Auto' | 'Manual'; value: string }
-    y: { mode: 'Auto' | 'Manual'; value: string }
-    radius: { mode: 'Auto' | 'Manual'; value: string }
-    resolution: { mode: 'Auto' | 'Manual'; value: string }
-    wellNo: { mode: 'All' | 'Manual'; value: string }
-    initialGuess: { mode: 'Auto' | 'Manual'; value: string }
-  }
-}
-
+/**
+ * 构建发送给服务器的请求数据
+ * @param numberOfWells 井的数量
+ * @param targetPoints 目标点数据
+ * @param entryDirections 入口方向数据
+ * @param kickoffPoints 开钻点数据
+ * @param kickoffDirections 开钻方向数据
+ * @param doglegPoints 狗腿度数据
+ * @param computeState 计算状态数据
+ * @returns 格式化后的请求数据
+ */
 export function buildRequestData(
   numberOfWells: number,
-  targetPoints: Point[],
-  entryDirections: Point[],
-  kickoffPoints: KickoffPoint[],
-  kickoffDirections: KickoffDirection[],
-  doglegPoints: DoglegPoint[],
-  computeState: ComputeState
-) {
-  const wellIndices = computeState.clusterSizes.map((item) => item.size);
-  
-  return {
-    "FIELDOPT INPUT BLOCK": {
-      "n": {
-        "DESCRIPTION": "number of wells",
-        "UNIT": "",
-        "VALUE": numberOfWells
+  targetPoints: Array<{x: string, y: string, z: string}>,
+  entryDirections: Array<{x: string, y: string, z: string}>,
+  kickoffPoints: Array<{pkx: number, pky: number, pkz: number}>,
+  kickoffDirections: Array<{vkx: number, vky: number, vkz: number}>,
+  doglegPoints: Array<{dogleg: string, radius: number}>,
+  computeState: any
+): RequestData {
+  // 构建请求数据结构
+  const requestData: RequestData = {
+    numberOfWells,
+    targetPoints,
+    entryDirections,
+    kickoffPoints,
+    kickoffDirections,
+    doglegPoints,
+    computeState
+  }
+
+  console.log('构建的请求数据:', requestData)
+  return requestData
+}
+
+/**
+ * 发送计算请求到服务器
+ * @param data 请求数据
+ * @returns Promise<any> 服务器响应
+ */
+export async function sendComputeRequest(data: RequestData): Promise<any> {
+  try {
+    console.log('发送计算请求:', data)
+    
+    // 这里应该是实际的 API 端点
+    const response = await axios.post('/api/compute', data, {
+      headers: {
+        'Content-Type': 'application/json'
       },
-      "WellNo": {
-        "DESCRIPTION": "well index",
-        "UNIT": "",
-        "VALUE": wellIndices
-      },
-      "PCM": {
-        "DESCRIPTION": "target location, i.e., the 1st point of completion interval. 3D, [EAST,NORTH,Depth]",
-        "UNIT": "m",
-        "VALUE": targetPoints.map(point => [
-          parseFloat(point.x) || 0,
-          parseFloat(point.y) || 0,
-          parseFloat(point.z) || 0
-        ])
-      },
-      "VCM": {
-        "DESCRIPTION": "driling direction at the target, 3D, [EAST,NORTH,Depth]",
-        "UNIT": "m",
-        "VALUE": entryDirections.map(dir => [
-          parseFloat(dir.x) || 0,
-          parseFloat(dir.y) || 0,
-          parseFloat(dir.z) || 0
-        ])
-      },
-      "PKzM": {
-        "DESCRIPTION": "kickoff depth, [Depth]",
-        "UNIT": "m",
-        "VALUE": kickoffPoints.map(point => [point.pkz])
-      },
-      "MD_intervalM": {
-        "DESCRIPTION": "measured depth interval in output data of well trajectory",
-        "UNIT": "m",
-        "VALUE": [
-          [
-            30.0
-          ],
-          [
-            100.0
-          ],
-          [NaN
-          ],
-          [NaN
-          ]
-        ]
-      },
-      "VKM": {
-        "DESCRIPTION": "driling direction at the KOP, 3D, [EAST,NORTH,Depth]",
-        "UNIT": "m",
-        "VALUE": kickoffDirections.map(dir => [dir.vkx, dir.vky, dir.vkz])
-      },
-      "DLSM": {
-        "DESCRIPTION": "dogleg severity, [Depth]",
-        "UNIT": "deg/30m",
-        "VALUE": doglegPoints.map(point => {
-          // 解析dogleg字符串，支持1-3个数值
-          const values = point.dogleg.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v))
-          return values.length > 0 ? values : [3] // 默认值为3
-        })
-      },
-      "rM": {
-        "DESCRIPTION": "turning radius",
-        "UNIT": "m",
-        "VALUE": doglegPoints.map(point => [point.radius])
-      },
-      "XRange": {
-        "DESCRIPTION": "X(East) range for computing",
-        "UNIT": "m",
-        "VALUE": computeState.ranges.x.mode === 'Manual'
-          ? JSON.parse(computeState.ranges.x.value || '[0, 0]')
-          : "Auto"
-      },
-      "YRange": {
-        "DESCRIPTION": "Y(North) range for computing",
-        "UNIT": "m",
-        "VALUE": computeState.ranges.y.mode === 'Manual'
-          ? JSON.parse(computeState.ranges.y.value || '[0, 0]')
-          : "Auto"
-      },
-      "resolution": {
-        "DESCRIPTION": "resolution for computing nodes",
-        "UNIT": "m",
-        "VALUE": computeState.ranges.resolution.mode === 'Manual'
-          ? parseFloat(computeState.ranges.resolution.value) || 0.0
-          : "Auto"
-      },
-      "cst_radiusM": {
-        "DESCRIPTION": "radius for computing cost contour",
-        "UNIT": "m",
-        "VALUE":
-          computeState.ranges.radius.mode === 'Manual'
-            ? JSON.parse(computeState.ranges.radius.value) || 0.0
-            : "Auto"
-      },
-      "PKM": {
-        "DESCRIPTION": "kickoff point, [East, North, Depth]",
-        "UNIT": "m",
-        "VALUE": kickoffPoints.map(point => [point.pkx, point.pky, point.pkz])
-      },
-      "necon": {
-        "DESCRIPTION": "non-equal constraints",
-        "UNIT": "",
-        "VALUE": null
-      },
-      "lay_con": {
-        "DESCRIPTION": "formation constraints in special layer(s)",
-        "UNIT": "",
-        "VALUE": null
-      },
-      "cst_Site": {
-        "DESCRIPTION": "drill site preparation cost",
-        "UNIT": "",
-        "VALUE": computeState.sitePreparationCost
-      },
-      "slot": {
-        "DESCRIPTION": "available slot numbers in one cluster",
-        "UNIT": "",
-        "VALUE": computeState.clusterSizes.map(item => item.size)
-      },
-      "cst_WH": {
-        "DESCRIPTION": "cost of subsea wellhead equipment of different slots, corresponding with slot",
-        "UNIT": "",
-        "VALUE": computeState.clusterSizes.map(item => item.cost)
-      },
-      "cluster_min": {
-        "DESCRIPTION": "minimum number of clusters(drill sites)",
-        "UNIT": "",
-        "VALUE": computeState.cluster_min
-      },
-      "cluster_max": {
-        "DESCRIPTION": "maximum number of clusters(drill sites)",
-        "UNIT": "",
-        "VALUE": computeState.cluster_max
+      timeout: 30000 // 30秒超时
+    })
+
+    console.log('服务器响应:', response.data)
+    return response.data
+  } catch (error) {
+    console.error('发送请求时出错:', error)
+    
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        // 服务器响应了错误状态码
+        throw new Error(`服务器错误: ${error.response.status} - ${error.response.data?.message || '未知错误'}`)
+      } else if (error.request) {
+        // 请求已发送但没有收到响应
+        throw new Error('网络错误: 无法连接到服务器')
+      } else {
+        // 请求配置出错
+        throw new Error(`请求配置错误: ${error.message}`)
       }
+    } else {
+      throw new Error(`未知错误: ${error}`)
     }
   }
 }
 
-export async function sendComputeRequest(requestData: any) {
-  // try {
-  //   const response = await axios.post('/api/compute', requestData)
-  //   return response.data
-  // } catch (error) {
-  //   console.error('Error:', error)
-  //   throw error
-  // }
-  alert(JSON.stringify(requestData));
+/**
+ * 格式化数值为指定小数位数
+ * @param value 数值
+ * @param decimals 小数位数，默认2位
+ * @returns 格式化后的数值
+ */
+export function formatNumber(value: number, decimals: number = 2): number {
+  return Math.floor(value * Math.pow(10, decimals)) / Math.pow(10, decimals)
+}
+
+/**
+ * 验证输入数据的有效性
+ * @param data 请求数据
+ * @returns 验证结果
+ */
+export function validateRequestData(data: RequestData): { isValid: boolean, errors: string[] } {
+  const errors: string[] = []
+
+  // 验证井数量
+  if (data.numberOfWells <= 0) {
+    errors.push('井的数量必须大于0')
+  }
+
+  // 验证目标点数据
+  if (data.targetPoints.length !== data.numberOfWells) {
+    errors.push('目标点数量与井数量不匹配')
+  }
+
+  // 验证入口方向数据
+  if (data.entryDirections.length !== data.numberOfWells) {
+    errors.push('入口方向数量与井数量不匹配')
+  }
+
+  // 验证开钻点数据
+  if (data.kickoffPoints.length !== data.numberOfWells) {
+    errors.push('开钻点数量与井数量不匹配')
+  }
+
+  // 验证开钻方向数据
+  if (data.kickoffDirections.length !== data.numberOfWells) {
+    errors.push('开钻方向数量与井数量不匹配')
+  }
+
+  // 验证狗腿度数据
+  if (data.doglegPoints.length !== data.numberOfWells) {
+    errors.push('狗腿度数据数量与井数量不匹配')
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  }
 }
