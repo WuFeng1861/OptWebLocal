@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, inject, watch } from 'vue'
+import { ElMessage } from 'element-plus'
 
 const numberOfWells = inject<Readonly<Ref<number>>>('numberOfWells')!
 const doglegPoints = inject<Ref<Array<{
@@ -20,11 +21,26 @@ const formatDoglegValue = (obj: any, key: string) => {
       const numbers = normalizedValue.split(',').map(num => {
         const parsed = parseFloat(num.trim())
         if (!isNaN(parsed)) {
+          if (parsed < 0) {
+            ElMessage({
+              message: '狗腿度值不能为负数',
+              type: 'error',
+              showClose: true,
+              duration: 3000
+            })
+            return '0'
+          }
           // 使用Math.floor保留最多2位小数
           const multiplied = parsed * 100
           const floored = Math.floor(multiplied) / 100
           return floored.toString()
         }
+        ElMessage({
+          message: `无效的狗腿度值: ${num.trim()}，请输入有效的数字`,
+          type: 'error',
+          showClose: true,
+          duration: 3000
+        })
         return num.trim()
       })
       obj[key] = numbers.join(',')
@@ -32,10 +48,28 @@ const formatDoglegValue = (obj: any, key: string) => {
       // 处理单个数字格式
       const parsed = parseFloat(normalizedValue)
       if (!isNaN(parsed)) {
+        if (parsed < 0) {
+          ElMessage({
+            message: '狗腿度值不能为负数',
+            type: 'error',
+            showClose: true,
+            duration: 3000
+          })
+          obj[key] = '0'
+          return
+        }
         // 使用Math.floor保留最多2位小数
         const multiplied = parsed * 100
         const floored = Math.floor(multiplied) / 100
         obj[key] = floored.toString()
+      } else if (normalizedValue !== '') {
+        ElMessage({
+          message: `无效的狗腿度值: ${normalizedValue}，请输入有效的数字或数组格式`,
+          type: 'error',
+          showClose: true,
+          duration: 3000
+        })
+        obj[key] = '3'
       }
     }
   }
@@ -45,10 +79,28 @@ const formatDoglegValue = (obj: any, key: string) => {
 const formatRadiusValue = (obj: any, key: string) => {
   const value = parseFloat(obj[key])
   if (!isNaN(value)) {
+    if (value <= 0) {
+      ElMessage({
+        message: '半径值必须大于0',
+        type: 'error',
+        showClose: true,
+        duration: 3000
+      })
+      obj[key] = 859.44
+      return
+    }
     // 使用Math.floor保留最多2位小数
     const multiplied = value * 100
     const floored = Math.floor(multiplied) / 100
     obj[key] = floored
+  } else {
+    ElMessage({
+      message: `无效的半径值，请输入有效的正数`,
+      type: 'error',
+      showClose: true,
+      duration: 3000
+    })
+    obj[key] = 859.44
   }
 }
 </script>
