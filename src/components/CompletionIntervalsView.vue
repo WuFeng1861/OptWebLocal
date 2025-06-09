@@ -13,8 +13,10 @@ const activeNames = ref(['wells', 'target', 'entry'])
 const formatToTwoDecimals = (obj: any, key: string) => {
   const value = parseFloat(obj[key])
   if (!isNaN(value)) {
-    // 保留最多2位小数，去除末尾的0
-    obj[key] = parseFloat(value.toFixed(2)).toString()
+    // 使用Math.floor保留最多2位小数
+    const multiplied = value * 100
+    const floored = Math.floor(multiplied) / 100
+    obj[key] = floored.toString()
   }
 }
 

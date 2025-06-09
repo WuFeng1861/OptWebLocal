@@ -44,8 +44,11 @@ const wellSchema = Joi.object({
 // 格式化数值为两位小数
 const formatToTwoDecimals = (value) => {
   const num = parseFloat(value);
-  // 保留最多2位小数，去除末尾的0
-  return isNaN(num) ? '0' : parseFloat(num.toFixed(2)).toString();
+  // 使用Math.floor保留最多2位小数
+  if (isNaN(num)) return '0';
+  const multiplied = num * 100;
+  const floored = Math.floor(multiplied) / 100;
+  return floored.toString();
 };
 
 // 处理井数据，确保精度
