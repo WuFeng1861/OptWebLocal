@@ -144,9 +144,8 @@ const computeState = ref<ComputeState>({
   ranges: {
     x: { mode: 'Auto', value: '' },
     y: { mode: 'Auto', value: '' },
-    radius: { mode: 'Auto', value: '' },
-    resolution: { mode: 'Auto', value: '' },
-    wellNo: { mode: 'All', value: '[1,3]' },
+    radius: { mode: 'Auto', value: '3000' },
+    resolution: { mode: 'Auto', value: '200' },
     initialGuess: { mode: 'Auto', value: '[0, 0]' }
   }
 })
