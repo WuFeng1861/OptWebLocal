@@ -97,6 +97,38 @@ const calculateAutoYRange = () => {
   return [0, 0]
 }
 
+// 计算 Initial Guess 的自动值（Target Points 的 x 和 y 的平均值）
+const calculateAutoInitialGuess = () => {
+  if (targetPoints.value.length === 0) {
+    return [0, 0]
+  }
+  
+  let totalX = 0
+  let totalY = 0
+  let validCount = 0
+  
+  for (const point of targetPoints.value) {
+    const x = parseFloat(point.x)
+    const y = parseFloat(point.y)
+    
+    if (!isNaN(x) && !isNaN(y)) {
+      totalX += x
+      totalY += y
+      validCount++
+    }
+  }
+  
+  if (validCount === 0) {
+    return [0, 0]
+  }
+  
+  // 计算平均值并保留2位小数
+  const avgX = Math.floor((totalX / validCount) * 100) / 100
+  const avgY = Math.floor((totalY / validCount) * 100) / 100
+  
+  return [avgX, avgY]
+}
+
 // 监听相关数据变化，自动更新范围值
 watchEffect(() => {
   if (computeState.value.ranges.x.mode === 'Auto') {
@@ -109,6 +141,13 @@ watchEffect(() => {
   if (computeState.value.ranges.y.mode === 'Auto') {
     const autoRange = calculateAutoYRange()
     computeState.value.ranges.y.value = JSON.stringify(autoRange)
+  }
+})
+
+watchEffect(() => {
+  if (computeState.value.ranges.initialGuess.mode === 'Auto') {
+    const autoGuess = calculateAutoInitialGuess()
+    computeState.value.ranges.initialGuess.value = JSON.stringify(autoGuess)
   }
 })
 
