@@ -11,10 +11,13 @@ const doglegPoints = inject<Ref<Array<{
 const formatDoglegValue = (obj: any, key: string) => {
   const value = obj[key]
   if (typeof value === 'string') {
+    // 首先将中文逗号替换为英文逗号
+    const normalizedValue = value.replace(/，/g, ',')
+    
     // 检查是否包含逗号（数组格式）
-    if (value.includes(',')) {
+    if (normalizedValue.includes(',')) {
       // 处理数组格式：如 "2.0,3.0,4.0"
-      const numbers = value.split(',').map(num => {
+      const numbers = normalizedValue.split(',').map(num => {
         const parsed = parseFloat(num.trim())
         if (!isNaN(parsed)) {
           // 使用Math.floor保留最多2位小数
@@ -27,7 +30,7 @@ const formatDoglegValue = (obj: any, key: string) => {
       obj[key] = numbers.join(',')
     } else {
       // 处理单个数字格式
-      const parsed = parseFloat(value)
+      const parsed = parseFloat(normalizedValue)
       if (!isNaN(parsed)) {
         // 使用Math.floor保留最多2位小数
         const multiplied = parsed * 100
