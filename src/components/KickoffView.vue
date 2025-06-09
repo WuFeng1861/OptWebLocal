@@ -3,94 +3,133 @@ import { ref, inject } from 'vue'
 import { ElMessage } from 'element-plus'
 
 const numberOfWells = inject<Readonly<Ref<number>>>('numberOfWells')!
-const doglegPoints = inject<Ref<Array<{
-  dogleg: string;
-  radius: number;
-}>>>('doglegPoints')!
+const kickoffPoints = inject<Ref<Array<{
+  pkx: number;
+  pky: number;
+  pkz: number;
+}>>>('kickoffPoints')!
+const kickoffDirections = inject<Ref<Array<{
+  vkx: number;
+  vky: number;
+  vkz: number;
+}>>>('kickoffDirections')!
 
-// 格式化dogleg值，支持单个数字或数组格式，保留最多2位小数
-const formatDoglegValue = (obj: any, key: string) => {
-  const value = obj[key]
-  if (typeof value === 'string') {
-    // 首先将中文逗号替换为英文逗号
-    const normalizedValue = value.replace(/，/g, ',')
-    
-    // 检查是否包含逗号（数组格式）
-    if (normalizedValue.includes(',')) {
-      // 处理数组格式：如 "2.0,3.0,4.0"
-      const numbers = normalizedValue.split(',').map(num => {
-        const parsed = parseFloat(num.trim())
-        if (!isNaN(parsed)) {
-          // 使用Math.floor保留最多2位小数
-          const multiplied = parsed * 100
-          const floored = Math.floor(multiplied) / 100
-          return floored.toString()
-        }
-        return num.trim()
-      })
-      obj[key] = numbers.join(',')
-    } else {
-      // 处理单个数字格式
-      const parsed = parseFloat(normalizedValue)
-      if (!isNaN(parsed)) {
-        // 使用Math.floor保留最多2位小数
-        const multiplied = parsed * 100
-        const floored = Math.floor(multiplied) / 100
-        obj[key] = floored.toString()
-      }
-    }
-  }
-}
+// 控制折叠面板的展开状态，默认全部展开
+const activeNames = ref(['depth', 'direction'])
 
-// 格式化radius值，保留最多2位小数
-const formatRadiusValue = (obj: any, key: string) => {
+// 验证并格式化数值输入
+const validateAndFormatNumber = (obj: any, key: string, defaultValue: number = 0) => {
   const value = parseFloat(obj[key])
   if (!isNaN(value)) {
-    // 使用Math.floor保留最多2位小数
-    const multiplied = value * 100
-    const floored = Math.floor(multiplied) / 100
-    obj[key] = floored
+    obj[key] = value
+  } else if (obj[key] !== '' && obj[key] !== defaultValue.toString()) {
+    ElMessage({
+      message: `Invalid value: ${obj[key]}, please enter a valid number`,
+      type: 'error',
+      showClose: true,
+      duration: 3000
+    })
+    obj[key] = defaultValue
   }
 }
 </script>
 
 <template>
-  <div class="p-4 max-h-[calc(100vh-500px)] overflow-y-auto">
-    <h2 class="text-lg font-serif mb-4 text-gray-800">狗腿度严重程度和对应的最小半径</h2>
+  <div class="pb-6 max-h-[calc(100vh-500px)] overflow-y-auto">
+    <el-collapse v-model="activeNames" class="custom-collapse">
+      <!-- Kickoff Depth -->
+      <el-collapse-item title="Kickoff Depth (PKz)" name="depth">
+        <div class="table-scroll-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>PKx</th>
+                <th>PKy</th>
+                <th>PKz</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(point, index) in kickoffPoints" :key="index">
+                <td>{{ index + 1 }}</td>
+                <td>
+                  <input
+                    type="number"
+                    v-model="point.pkx"
+                    @blur="validateAndFormatNumber(point, 'pkx', 0)"
+                    step="0.01"
+                  >
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    v-model="point.pky"
+                    @blur="validateAndFormatNumber(point, 'pky', 0)"
+                    step="0.01"
+                  >
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    v-model="point.pkz"
+                    @blur="validateAndFormatNumber(point, 'pkz', -500)"
+                    step="0.01"
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </el-collapse-item>
 
-    <div class="border rounded max-h-[400px] overflow-y-auto">
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="bg-gray-50 border-b">
-            <th class="w-12 py-2 px-2 text-center font-medium border-r">#</th>
-            <th class="w-1/2 py-2 px-2 text-center font-medium border-r">狗腿度 (°/30m)</th>
-            <th class="w-1/2 py-2 px-2 text-center font-medium">半径(m)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(point, index) in doglegPoints" :key="index" class="border-b last:border-b-0">
-            <td class="py-1.5 px-2 border-r text-center">{{ index + 1 }}</td>
-            <td class="py-1.5 px-2 border-r">
-              <input
-                type="text"
-                v-model="point.dogleg"
-                @blur="formatDoglegValue(point, 'dogleg')"
-                class="w-full px-1.5 py-1 border rounded text-right"
-                placeholder="例如: 2.0 或 2.0,3.0,4.0"
-              >
-            </td>
-            <td class="py-1.5 px-2">
-              <input
-                type="number"
-                v-model="point.radius"
-                @blur="formatRadiusValue(point, 'radius')"
-                class="w-full px-1.5 py-1 border rounded text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                step="0.01"
-              >
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <!-- Direction -->
+      <el-collapse-item title="Direction (VK)" name="direction">
+        <div class="table-scroll-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>VKx</th>
+                <th>VKy</th>
+                <th>VKz</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(direction, index) in kickoffDirections" :key="index">
+                <td>{{ index + 1 }}</td>
+                <td>
+                  <input
+                    type="number"
+                    v-model="direction.vkx"
+                    @blur="validateAndFormatNumber(direction, 'vkx', 0)"
+                    step="0.01"
+                  >
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    v-model="direction.vky"
+                    @blur="validateAndFormatNumber(direction, 'vky', 0)"
+                    step="0.01"
+                  >
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    v-model="direction.vkz"
+                    @blur="validateAndFormatNumber(direction, 'vkz', -1)"
+                    step="0.01"
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </el-collapse-item>
+    </el-collapse>
   </div>
 </template>
+
+<style scoped>
+@import '../styles/shared.css';
+</style>
