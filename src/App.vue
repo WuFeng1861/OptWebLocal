@@ -76,8 +76,8 @@ interface OtherConstraintsState {
 
 const activeTab = ref('completion-intervals')
 const numberOfWells = ref(1)
-const targetPoints = ref<Point[]>([{ x: '', y: '', z: '' }])
-const entryDirections = ref<Point[]>([{ x: '', y: '', z: '' }])
+const targetPoints = ref<Point[]>([{ x: '0', y: '0', z: '0' }])
+const entryDirections = ref<Point[]>([{ x: '0', y: '0', z: '0' }])
 
 // Kickoff state
 const kickoffPoints = ref<KickoffPoint[]>([{
