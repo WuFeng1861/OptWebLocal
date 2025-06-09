@@ -137,16 +137,12 @@ export function buildRequestData(
       "resolution": {
         "DESCRIPTION": "resolution for computing nodes",
         "UNIT": "m",
-        "VALUE": computeState.ranges.resolution.mode === 'Auto' 
-          ? "Auto" 
-          : parseFloat(computeState.ranges.resolution.value) || 200
+        "VALUE": parseFloat(computeState.ranges.resolution.value) || 200
       },
       "cst_radiusM": {
         "DESCRIPTION": "radius for computing cost contour",
         "UNIT": "m",
-        "VALUE": computeState.ranges.radius.mode === 'Auto' 
-          ? "Auto" 
-          : parseFloat(computeState.ranges.radius.value) || 3000
+        "VALUE": parseFloat(computeState.ranges.radius.value) || 3000
       },
       "PKM": {
         "DESCRIPTION": "kickoff point, [East, North, Depth]",
