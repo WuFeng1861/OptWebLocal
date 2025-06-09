@@ -9,6 +9,14 @@ const updateNumberOfWells = inject<(value: number) => void>('updateNumberOfWells
 // 控制折叠面板的展开状态，默认全部展开
 const activeNames = ref(['wells', 'target', 'entry'])
 
+// 格式化为两位小数的函数
+const formatToTwoDecimals = (obj: any, key: string) => {
+  const value = parseFloat(obj[key])
+  if (!isNaN(value)) {
+    obj[key] = value.toFixed(2)
+  }
+}
+
 const handleNumberOfWellsInput = (e: Event) => {
   const input = e.target as HTMLInputElement
   const value = input.value.replace(/[^0-9]/g, '')
@@ -51,22 +59,25 @@ const handleNumberOfWellsInput = (e: Event) => {
               <td>
                 <input
                     type="number"
-                    step="any"
+                    step="0.01"
                     v-model="point.x"
+                    @blur="formatToTwoDecimals(point, 'x')"
                 >
               </td>
               <td>
                 <input
                     type="number"
-                    step="any"
+                    step="0.01"
                     v-model="point.y"
+                    @blur="formatToTwoDecimals(point, 'y')"
                 >
               </td>
               <td>
                 <input
                     type="number"
-                    step="any"
+                    step="0.01"
                     v-model="point.z"
+                    @blur="formatToTwoDecimals(point, 'z')"
                 >
               </td>
             </tr>
@@ -92,22 +103,25 @@ const handleNumberOfWellsInput = (e: Event) => {
               <td>
                 <input
                     type="number"
-                    step="any"
+                    step="0.01"
                     v-model="direction.x"
+                    @blur="formatToTwoDecimals(direction, 'x')"
                 >
               </td>
               <td>
                 <input
                     type="number"
-                    step="any"
+                    step="0.01"
                     v-model="direction.y"
+                    @blur="formatToTwoDecimals(direction, 'y')"
                 >
               </td>
               <td>
                 <input
                     type="number"
-                    step="any"
+                    step="0.01"
                     v-model="direction.z"
+                    @blur="formatToTwoDecimals(direction, 'z')"
                 >
               </td>
             </tr>
