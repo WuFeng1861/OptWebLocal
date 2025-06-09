@@ -53,6 +53,74 @@ export function buildRequestData(
   doglegPoints: DoglegPoint[],
   computeState: ComputeState
 ) {
+  // 计算 X Range 的自动值
+  const calculateAutoXRange = () => {
+    const ranges: number[] = []
+    
+    for (let i = 0; i < targetPoints.length; i++) {
+      const targetPoint = targetPoints[i]
+      const doglegPoint = doglegPoints[i]
+      
+      if (targetPoint && doglegPoint) {
+        const p2x = parseFloat(targetPoint.x)
+        const radius = doglegPoint.radius
+        
+        if (!isNaN(p2x) && !isNaN(radius)) {
+          const minRange = p2x - radius - 1000
+          const maxRange = p2x + radius + 1000
+          ranges.push(minRange, maxRange)
+        }
+      }
+    }
+    
+    if (ranges.length > 0) {
+      const minValue = Math.min(...ranges)
+      const maxValue = Math.max(...ranges)
+      
+      // 保留2位小数
+      const formattedMin = Math.floor(minValue * 100) / 100
+      const formattedMax = Math.floor(maxValue * 100) / 100
+      
+      return [formattedMin, formattedMax]
+    }
+    
+    return [0, 0]
+  }
+
+  // 计算 Y Range 的自动值
+  const calculateAutoYRange = () => {
+    const ranges: number[] = []
+    
+    for (let i = 0; i < targetPoints.length; i++) {
+      const targetPoint = targetPoints[i]
+      const doglegPoint = doglegPoints[i]
+      
+      if (targetPoint && doglegPoint) {
+        const p2y = parseFloat(targetPoint.y)
+        const radius = doglegPoint.radius
+        
+        if (!isNaN(p2y) && !isNaN(radius)) {
+          const minRange = p2y - radius - 1000
+          const maxRange = p2y + radius + 1000
+          ranges.push(minRange, maxRange)
+        }
+      }
+    }
+    
+    if (ranges.length > 0) {
+      const minValue = Math.min(...ranges)
+      const maxValue = Math.max(...ranges)
+      
+      // 保留2位小数
+      const formattedMin = Math.floor(minValue * 100) / 100
+      const formattedMax = Math.floor(maxValue * 100) / 100
+      
+      return [formattedMin, formattedMax]
+    }
+    
+    return [0, 0]
+  }
+
   const wellIndices = computeState.clusterSizes.map((item) => item.size);
   
   return {
@@ -128,16 +196,16 @@ export function buildRequestData(
       "XRange": {
         "DESCRIPTION": "X(East) range for computing",
         "UNIT": "m",
-        "VALUE": computeState.ranges.x.mode === 'Manual'
-          ? JSON.parse(computeState.ranges.x.value || '[0, 0]')
-          : "Auto"
+        "VALUE": computeState.ranges.x.mode === 'Auto'
+          ? calculateAutoXRange()
+          : JSON.parse(computeState.ranges.x.value || '[0, 0]')
       },
       "YRange": {
         "DESCRIPTION": "Y(North) range for computing",
         "UNIT": "m",
-        "VALUE": computeState.ranges.y.mode === 'Manual'
-          ? JSON.parse(computeState.ranges.y.value || '[0, 0]')
-          : "Auto"
+        "VALUE": computeState.ranges.y.mode === 'Auto'
+          ? calculateAutoYRange()
+          : JSON.parse(computeState.ranges.y.value || '[0, 0]')
       },
       "resolution": {
         "DESCRIPTION": "resolution for computing nodes",
