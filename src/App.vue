@@ -76,8 +76,8 @@ interface OtherConstraintsState {
 
 const activeTab = ref('completion-intervals')
 const numberOfWells = ref(1)
-const targetPoints = ref<Point[]>([{ x: '0', y: '0', z: '0' }])
-const entryDirections = ref<Point[]>([{ x: '0', y: '0', z: '0' }])
+const targetPoints = ref<Point[]>([{ x: '', y: '', z: '' }])
+const entryDirections = ref<Point[]>([{ x: '', y: '', z: '' }])
 
 // Kickoff state
 const kickoffPoints = ref<KickoffPoint[]>([{
@@ -163,14 +163,14 @@ provide('updateNumberOfWells', (value: number) => {
 
   // Update arrays when number of wells changes
   while (targetPoints.value.length < value) {
-    targetPoints.value.push({ x: '0', y: '0', z: '0' })
+    targetPoints.value.push({ x: '', y: '', z: '' })
   }
   while (targetPoints.value.length > value) {
     targetPoints.value.pop()
   }
 
   while (entryDirections.value.length < value) {
-    entryDirections.value.push({ x: '0', y: '0', z: '0' })
+    entryDirections.value.push({ x: '', y: '', z: '' })
   }
   while (entryDirections.value.length > value) {
     entryDirections.value.pop()
