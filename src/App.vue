@@ -14,14 +14,14 @@ interface Point {
 }
 
 interface KickoffPoint {
-  pkx: number
-  pky: number
+  pkx: number | null
+  pky: number | null
   pkz: number
 }
 
 interface KickoffDirection {
-  vkx: number
-  vky: number
+  vkx: number | null
+  vky: number | null
   vkz: number
 }
 
@@ -81,14 +81,14 @@ const entryDirections = ref<Point[]>([{ x: '', y: '', z: '' }])
 
 // Kickoff state
 const kickoffPoints = ref<KickoffPoint[]>([{
-  pkx: 0,
-  pky: 0,
+  pkx: null,
+  pky: null,
   pkz: -500.00
 }])
 
 const kickoffDirections = ref<KickoffDirection[]>([{
-  vkx: 0,
-  vky: 0,
+  vkx: null,
+  vky: null,
   vkz: -1.00
 }])
 
@@ -187,8 +187,8 @@ provide('updateNumberOfWells', (value: number) => {
   // Update kickoff points
   while (kickoffPoints.value.length < value) {
     kickoffPoints.value.push({
-      pkx: 0,
-      pky: 0,
+      pkx: null,
+      pky: null,
       pkz: -500.00
     })
   }
@@ -199,8 +199,8 @@ provide('updateNumberOfWells', (value: number) => {
   // Update kickoff directions
   while (kickoffDirections.value.length < value) {
     kickoffDirections.value.push({
-      vkx: 0,
-      vky: 0,
+      vkx: null,
+      vky: null,
       vkz: -1.00
     })
   }

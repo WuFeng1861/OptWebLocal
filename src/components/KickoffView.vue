@@ -3,13 +3,13 @@ import { ref, inject } from 'vue'
 
 const numberOfWells = inject<Readonly<Ref<number>>>('numberOfWells')!
 const kickoffPoints = inject<Ref<Array<{
-  pkx: number;
-  pky: number;
+  pkx: number | null;
+  pky: number | null;
   pkz: number;
 }>>>('kickoffPoints')!
 const kickoffDirections = inject<Ref<Array<{
-  vkx: number;
-  vky: number;
+  vkx: number | null;
+  vky: number | null;
   vkz: number;
 }>>>('kickoffDirections')!
 
@@ -40,6 +40,7 @@ const activeNames = ref(['depth', 'direction'])
                     type="number"
                     v-model="point.pkx"
                     step="0.01"
+                    placeholder=""
                   >
                 </td>
                 <td>
@@ -47,6 +48,7 @@ const activeNames = ref(['depth', 'direction'])
                     type="number"
                     v-model="point.pky"
                     step="0.01"
+                    placeholder=""
                   >
                 </td>
                 <td>
@@ -82,6 +84,7 @@ const activeNames = ref(['depth', 'direction'])
                     type="number"
                     v-model="direction.vkx"
                     step="0.01"
+                    placeholder=""
                   >
                 </td>
                 <td>
@@ -89,6 +92,7 @@ const activeNames = ref(['depth', 'direction'])
                     type="number"
                     v-model="direction.vky"
                     step="0.01"
+                    placeholder=""
                   >
                 </td>
                 <td>
