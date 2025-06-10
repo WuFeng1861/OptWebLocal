@@ -76,6 +76,28 @@ const handleAngleInput = (obj: any, key: string, event: Event) => {
   target.value = validatedValue
 }
 
+// 处理角度失焦验证
+const handleAngleBlur = (obj: any, key: string, event: Event) => {
+  const target = event.target as HTMLInputElement
+  const value = target.value.trim()
+  
+  if (value === '') {
+    obj[key] = ''
+    return
+  }
+  
+  const num = parseFloat(value)
+  
+  // 如果不是有效数字或不在0-180范围内，则清空
+  if (isNaN(num) || num < 0 || num > 180) {
+    obj[key] = ''
+    target.value = ''
+  } else {
+    // 如果是有效范围内的数字，保持原值
+    obj[key] = value
+  }
+}
+
 // 监听井数变化，更新Specify表格数据
 watch(numberOfWells, (newValue) => {
   // 更新Drill Site Specify数据
@@ -331,6 +353,7 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
                         type="text"
                         v-model="item.firstCurve"
                         @input="handleAngleInput(item, 'firstCurve', $event)"
+                       @blur="handleAngleBlur(item, 'firstCurve', $event)"
                         min="0"
                         max="180"
                         step="0.1"
@@ -342,6 +365,7 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
                         type="text"
                         v-model="item.secondCurve"
                         @input="handleAngleInput(item, 'secondCurve', $event)"
+                       @blur="handleAngleBlur(item, 'secondCurve', $event)"
                         min="0"
                         max="180"
                         step="0.1"
