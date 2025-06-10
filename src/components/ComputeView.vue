@@ -25,8 +25,8 @@ const computeState = inject<Ref<{
 const numberOfWells = inject<Readonly<Ref<number>>>('numberOfWells')!
 const targetPoints = inject<Ref<Array<{x: string, y: string, z: string}>>>('targetPoints')!
 const entryDirections = inject<Ref<Array<{x: string, y: string, z: string}>>>('entryDirections')!
-const kickoffPoints = inject<Ref<Array<{pkx: number, pky: number, pkz: number}>>>('kickoffPoints')!
-const kickoffDirections = inject<Ref<Array<{vkx: number, vky: number, vkz: number}>>>('kickoffDirections')!
+const kickoffPoints = inject<Ref<Array<{pkx: number | null, pky: number | null, pkz: number}>>>('kickoffPoints')!
+const kickoffDirections = inject<Ref<Array<{vkx: number | null, vky: number | null, vkz: number}>>>('kickoffDirections')!
 const doglegPoints = inject<Ref<Array<{dogleg: number, radius: number}>>>('doglegPoints')!
 
 // 计算X Range的自动值
