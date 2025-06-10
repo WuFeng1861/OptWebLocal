@@ -52,7 +52,7 @@ const calculateAutoXRange = () => {
   if (ranges.length > 0) {
     const minValue = Math.min(...ranges)
     const maxValue = Math.max(...ranges)
-    
+    console.log(minValue, maxValue, 'calculateAutoXRange')
     // 向下取整到500的倍数（减去额外的500）
     const formattedMin = Math.floor((minValue - 500) / 500) * 500
     // 向上取整到500的倍数（加上额外的500）
