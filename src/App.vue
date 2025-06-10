@@ -212,7 +212,7 @@ provide('updateNumberOfWells', (value: number) => {
   while (doglegPoints.value.length < value) {
     doglegPoints.value.push({
       dogleg: "3",
-      radius: 859.44
+      radius: 572.95
     })
   }
   while (doglegPoints.value.length > value) {
