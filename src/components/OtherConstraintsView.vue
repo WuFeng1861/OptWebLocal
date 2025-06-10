@@ -94,7 +94,7 @@ const handleAngleBlur = (obj: any, key: string, event: Event) => {
     target.value = ''
   } else {
     // 如果是有效范围内的数字，保持原值
-    obj[key] = value
+    obj[key] = num
   }
 }
 
