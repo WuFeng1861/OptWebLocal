@@ -56,6 +56,26 @@ const wellOptions = computed(() => {
   return options
 })
 
+// 验证角度输入（0-180度）
+const validateAngle = (value: string): string => {
+  const num = parseFloat(value)
+  if (isNaN(num)) return value
+  
+  // 限制在0-180范围内
+  if (num < 0) return '0'
+  if (num > 180) return '180'
+  
+  return value
+}
+
+// 处理角度输入
+const handleAngleInput = (obj: any, key: string, event: Event) => {
+  const target = event.target as HTMLInputElement
+  const validatedValue = validateAngle(target.value)
+  obj[key] = validatedValue
+  target.value = validatedValue
+}
+
 // 监听井数变化，更新Specify表格数据
 watch(numberOfWells, (newValue) => {
   // 更新Drill Site Specify数据
@@ -310,6 +330,10 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
                       <input
                         type="text"
                         v-model="item.firstCurve"
+                        @input="handleAngleInput(item, 'firstCurve', $event)"
+                        min="0"
+                        max="180"
+                        step="0.1"
                         placeholder="90"
                       >
                     </td>
@@ -317,6 +341,10 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
                       <input
                         type="text"
                         v-model="item.secondCurve"
+                        @input="handleAngleInput(item, 'secondCurve', $event)"
+                        min="0"
+                        max="180"
+                        step="0.1"
                         placeholder="90"
                       >
                     </td>
