@@ -106,7 +106,7 @@ const activeSurfaceIndex = ref(0)
 // Dogleg state
 const doglegPoints = ref<DoglegPoint[]>([{
   dogleg: 3.00,
-  radius: 859.44
+  radius: 572.95
 }])
 
 // Other Constraints state
