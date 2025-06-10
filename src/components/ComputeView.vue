@@ -53,9 +53,10 @@ const calculateAutoXRange = () => {
     const minValue = Math.min(...ranges)
     const maxValue = Math.max(...ranges)
     
-    // 保留2位小数
-    const formattedMin = Math.floor(minValue * 100) / 100
-    const formattedMax = Math.floor(maxValue * 100) / 100
+    // 向下取整到500的倍数（减去额外的500）
+    const formattedMin = Math.floor((minValue - 500) / 500) * 500
+    // 向上取整到500的倍数（加上额外的500）
+    const formattedMax = Math.ceil((maxValue + 500) / 500) * 500
     
     return [formattedMin, formattedMax]
   }
@@ -87,9 +88,10 @@ const calculateAutoYRange = () => {
     const minValue = Math.min(...ranges)
     const maxValue = Math.max(...ranges)
     
-    // 保留2位小数
-    const formattedMin = Math.floor(minValue * 100) / 100
-    const formattedMax = Math.floor(maxValue * 100) / 100
+    // 向下取整到500的倍数（减去额外的500）
+    const formattedMin = Math.floor((minValue - 500) / 500) * 500
+    // 向上取整到500的倍数（加上额外的500）
+    const formattedMax = Math.ceil((maxValue + 500) / 500) * 500
     
     return [formattedMin, formattedMax]
   }
