@@ -9,7 +9,6 @@ const doglegPoints = inject<Ref<Array<{
 
 // 格式化dogleg值，支持单个数字或数组格式，保留最多2位小数
 const formatDoglegValue = (obj: any, key: string) => {
-  console.log(obj, key);
   const value = obj[key]
   if (typeof value === 'string') {
     // 首先将中文逗号替换为英文逗号
@@ -40,6 +39,9 @@ const formatDoglegValue = (obj: any, key: string) => {
       }
     }
   }
+  
+  // 自动计算 radius
+  calculateRadius(obj)
 }
 
 // 格式化radius值，保留最多2位小数
@@ -50,6 +52,25 @@ const formatRadiusValue = (obj: any, key: string) => {
     const multiplied = value * 100
     const floored = Math.floor(multiplied) / 100
     obj[key] = floored
+  }
+}
+
+// 根据 dogleg 值自动计算 radius
+const calculateRadius = (doglegPoint: any) => {
+  const doglegValue = doglegPoint.dogleg
+  
+  if (typeof doglegValue === 'string') {
+    // 处理逗号分隔的多个值，取第一个值进行计算
+    const firstValue = doglegValue.split(',')[0].trim()
+    const doglegNum = parseFloat(firstValue)
+    
+    if (!isNaN(doglegNum) && doglegNum > 0) {
+      // 公式: radius = 30 * 180 / (dogleg * π)
+      const radius = (30 * 180) / (doglegNum * Math.PI)
+      // 保留最多2位小数
+      const formattedRadius = Math.floor(radius * 100) / 100
+      doglegPoint.radius = formattedRadius
+    }
   }
 }
 </script>
