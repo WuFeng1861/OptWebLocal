@@ -162,25 +162,25 @@ const validateData = () => {
   
   // 1. 检查 Number of Wells 不能小于1
   if (numberOfWells.value < 1) {
-    errors.push('井数不能小于1')
+    errors.push('Number of wells cannot be less than 1')
   }
   
   // 2. 检查 Target Points (PT) 不能有空值
   for (let i = 0; i < targetPoints.value.length; i++) {
     const point = targetPoints.value[i]
     if (!point.x || !point.y || !point.z) {
-      errors.push(`目标点 ${i + 1} 的坐标不能为空 (P2x: ${point.x}, P2y: ${point.y}, P2z: ${point.z})`)
+      errors.push(`Target point ${i + 1} coordinates cannot be empty (P2x: ${point.x}, P2y: ${point.y}, P2z: ${point.z})`)
     }
     
     // 检查是否为有效数字
     if (point.x && isNaN(parseFloat(point.x))) {
-      errors.push(`目标点 ${i + 1} 的 P2x 必须是有效数字`)
+      errors.push(`Target point ${i + 1} P2x must be a valid number`)
     }
     if (point.y && isNaN(parseFloat(point.y))) {
-      errors.push(`目标点 ${i + 1} 的 P2y 必须是有效数字`)
+      errors.push(`Target point ${i + 1} P2y must be a valid number`)
     }
     if (point.z && isNaN(parseFloat(point.z))) {
-      errors.push(`目标点 ${i + 1} 的 P2z 必须是有效数字`)
+      errors.push(`Target point ${i + 1} P2z must be a valid number`)
     }
   }
   
@@ -188,18 +188,18 @@ const validateData = () => {
   for (let i = 0; i < entryDirections.value.length; i++) {
     const direction = entryDirections.value[i]
     if (!direction.x || !direction.y || !direction.z) {
-      errors.push(`入口方向 ${i + 1} 的坐标不能为空 (V2x: ${direction.x}, V2y: ${direction.y}, V2z: ${direction.z})`)
+      errors.push(`Entry direction ${i + 1} coordinates cannot be empty (V2x: ${direction.x}, V2y: ${direction.y}, V2z: ${direction.z})`)
     }
     
     // 检查是否为有效数字
     if (direction.x && isNaN(parseFloat(direction.x))) {
-      errors.push(`入口方向 ${i + 1} 的 V2x 必须是有效数字`)
+      errors.push(`Entry direction ${i + 1} V2x must be a valid number`)
     }
     if (direction.y && isNaN(parseFloat(direction.y))) {
-      errors.push(`入口方向 ${i + 1} 的 V2y 必须是有效数字`)
+      errors.push(`Entry direction ${i + 1} V2y must be a valid number`)
     }
     if (direction.z && isNaN(parseFloat(direction.z))) {
-      errors.push(`入口方向 ${i + 1} 的 V2z 必须是有效数字`)
+      errors.push(`Entry direction ${i + 1} V2z must be a valid number`)
     }
   }
   
@@ -209,13 +209,13 @@ const validateData = () => {
     
     // 检查 dogleg 不能为空
     if (!point.dogleg || point.dogleg.toString().trim() === '') {
-      errors.push(`井 ${i + 1} 的 dogleg 值不能为空`)
+      errors.push(`Well ${i + 1} dogleg value cannot be empty`)
       continue
     }
     
     // 检查 radius 不能为空
     if (!point.radius || point.radius.toString().trim() === '') {
-      errors.push(`井 ${i + 1} 的 radius 值不能为空`)
+      errors.push(`Well ${i + 1} radius value cannot be empty`)
       continue
     }
     
@@ -229,20 +229,20 @@ const validateData = () => {
     // 检查 dogleg 值是否都是有效数字
     for (let j = 0; j < doglegValues.length; j++) {
       if (isNaN(parseFloat(doglegValues[j]))) {
-        errors.push(`井 ${i + 1} 的 dogleg 第 ${j + 1} 个值必须是有效数字`)
+        errors.push(`Well ${i + 1} dogleg value ${j + 1} must be a valid number`)
       }
     }
     
     // 检查 radius 值是否都是有效数字
     for (let j = 0; j < radiusValues.length; j++) {
       if (isNaN(parseFloat(radiusValues[j]))) {
-        errors.push(`井 ${i + 1} 的 radius 第 ${j + 1} 个值必须是有效数字`)
+        errors.push(`Well ${i + 1} radius value ${j + 1} must be a valid number`)
       }
     }
     
     // 检查 dogleg 和 radius 的数据位数是否一致
     if (doglegValues.length !== radiusValues.length) {
-      errors.push(`井 ${i + 1} 的 dogleg 和 radius 数据位数不一致 (dogleg: ${doglegValues.length} 个值, radius: ${radiusValues.length} 个值)`)
+      errors.push(`Well ${i + 1} dogleg and radius data count mismatch (dogleg: ${doglegValues.length} values, radius: ${radiusValues.length} values)`)
     }
   }
   
@@ -256,7 +256,7 @@ const sendRequest = async () => {
     
     if (validationErrors.length > 0) {
       // 显示验证错误信息
-      const errorMessage = '数据验证失败，请检查以下问题：\n\n' + validationErrors.join('\n')
+      const errorMessage = 'Data validation failed. Please check the following issues:\n\n' + validationErrors.join('\n')
       alert(errorMessage)
       return
     }
