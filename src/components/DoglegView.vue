@@ -4,7 +4,7 @@ import { ref, inject, watch } from 'vue'
 const numberOfWells = inject<Readonly<Ref<number>>>('numberOfWells')!
 const doglegPoints = inject<Ref<Array<{
   dogleg: string;
-  radius: number;
+  radius: string;
 }>>>('doglegPoints')!
 
 // 格式化dogleg值，支持单个数字或数组格式，保留最多2位小数
@@ -41,35 +41,108 @@ const formatDoglegValue = (obj: any, key: string) => {
   }
   
   // 自动计算 radius
-  calculateRadius(obj)
+  calculateRadiusFromDogleg(obj)
 }
 
-// 格式化radius值，保留最多2位小数
+// 格式化radius值，支持单个数字或数组格式，保留最多2位小数
 const formatRadiusValue = (obj: any, key: string) => {
-  const value = parseFloat(obj[key])
-  if (!isNaN(value)) {
-    // 使用Math.floor保留最多2位小数
-    const multiplied = value * 100
-    const floored = Math.floor(multiplied) / 100
-    obj[key] = floored
+  const value = obj[key]
+  if (typeof value === 'string') {
+    // 首先将中文逗号替换为英文逗号
+    const normalizedValue = value.replace(/，/g, ',')
+    
+    // 检查是否包含逗号（数组格式）
+    if (normalizedValue.includes(',')) {
+      // 处理数组格式：如 "572.95,381.97,286.48"
+      const numbers = normalizedValue.split(',').map(num => {
+        const parsed = parseFloat(num.trim())
+        if (!isNaN(parsed)) {
+          // 使用Math.floor保留最多2位小数
+          const multiplied = parsed * 100
+          const floored = Math.floor(multiplied) / 100
+          return floored.toString()
+        }
+        return num.trim()
+      })
+      obj[key] = numbers.join(',')
+    } else {
+      // 处理单个数字格式
+      const parsed = parseFloat(normalizedValue)
+      if (!isNaN(parsed)) {
+        // 使用Math.floor保留最多2位小数
+        const multiplied = parsed * 100
+        const floored = Math.floor(multiplied) / 100
+        obj[key] = floored.toString()
+      }
+    }
   }
+  
+  // 自动计算 dogleg
+  calculateDoglegFromRadius(obj)
 }
 
 // 根据 dogleg 值自动计算 radius
-const calculateRadius = (doglegPoint: any) => {
+const calculateRadiusFromDogleg = (doglegPoint: any) => {
   const doglegValue = doglegPoint.dogleg
   
   if (typeof doglegValue === 'string') {
-    // 处理逗号分隔的多个值，取第一个值进行计算
-    const firstValue = doglegValue.split(',')[0].trim()
-    const doglegNum = parseFloat(firstValue)
-    
-    if (!isNaN(doglegNum) && doglegNum > 0) {
-      // 公式: radius = 30 * 180 / (dogleg * π)
-      const radius = (30 * 180) / (doglegNum * Math.PI)
-      // 保留最多2位小数
-      const formattedRadius = Math.floor(radius * 100) / 100
-      doglegPoint.radius = formattedRadius
+    // 检查是否包含逗号（数组格式）
+    if (doglegValue.includes(',')) {
+      // 处理数组格式，计算每个值对应的radius
+      const doglegNumbers = doglegValue.split(',').map(val => parseFloat(val.trim())).filter(val => !isNaN(val))
+      const radiusNumbers = doglegNumbers.map(doglegNum => {
+        if (doglegNum > 0) {
+          // 公式: radius = 30 * 180 / (dogleg * π)
+          const radius = (30 * 180) / (doglegNum * Math.PI)
+          // 保留最多2位小数
+          return Math.floor(radius * 100) / 100
+        }
+        return 0
+      })
+      doglegPoint.radius = radiusNumbers.map(r => r.toString()).join(',')
+    } else {
+      // 处理单个值
+      const doglegNum = parseFloat(doglegValue)
+      if (!isNaN(doglegNum) && doglegNum > 0) {
+        // 公式: radius = 30 * 180 / (dogleg * π)
+        const radius = (30 * 180) / (doglegNum * Math.PI)
+        // 保留最多2位小数
+        const formattedRadius = Math.floor(radius * 100) / 100
+        doglegPoint.radius = formattedRadius.toString()
+      }
+    }
+  }
+}
+
+// 根据 radius 值自动计算 dogleg
+const calculateDoglegFromRadius = (doglegPoint: any) => {
+  const radiusValue = doglegPoint.radius
+  
+  if (typeof radiusValue === 'string') {
+    // 检查是否包含逗号（数组格式）
+    if (radiusValue.includes(',')) {
+      // 处理数组格式，计算每个值对应的dogleg
+      const radiusNumbers = radiusValue.split(',').map(val => parseFloat(val.trim())).filter(val => !isNaN(val))
+      const doglegNumbers = radiusNumbers.map(radiusNum => {
+        if (radiusNum > 0) {
+          // 公式: dogleg = 30 * 180 / (radius * π)
+          const dogleg = (30 * 180) / (radiusNum * Math.PI)
+          // 保留最多2位小数
+          return Math.floor(dogleg * 100) / 100
+        }
+        return 0
+      })
+      doglegPoint.dogleg = doglegNumbers.map(d => d.toString()).join(',')
+    } else {
+      // 处理单个值
+      const radiusNum = parseFloat(radiusValue)
+      if (!isNaN(radiusNum) && radiusNum > 0) {
+        // 公式: dogleg = 30 * 180 / (radius * π)
+        const dogleg = (30 * 180) / (radiusNum * Math.PI)
+        // 保留最多2位小数
+        const formattedDogleg = Math.floor(dogleg * 100) / 100
+        doglegPoint.dogleg = formattedDogleg.toString()
+      }
     }
   }
 }
@@ -102,11 +175,11 @@ const calculateRadius = (doglegPoint: any) => {
             </td>
             <td class="py-1.5 px-2">
               <input
-                type="number"
+                type="text"
                 v-model="point.radius"
                 @blur="formatRadiusValue(point, 'radius')"
-                class="w-full px-1.5 py-1 border rounded text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                step="0.01"
+                class="w-full px-1.5 py-1 border rounded text-right"
+                placeholder="e.g.: 572.95 or 572.95,381.97,286.48"
               >
             </td>
           </tr>
