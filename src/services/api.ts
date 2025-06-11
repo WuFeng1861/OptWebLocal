@@ -20,7 +20,7 @@ interface KickoffDirection {
 
 interface DoglegPoint {
   dogleg: string
-  radius: number
+  radius: string
 }
 
 interface ComputeState {
@@ -122,7 +122,22 @@ export function buildRequestData(
       "rM": {
         "DESCRIPTION": "turning radius",
         "UNIT": "m",
-        "VALUE": doglegPoints.map(point => [point.radius])
+        "VALUE": doglegPoints.map(point => {
+          // 解析radius字符串，支持单个数字或数组格式
+          if (typeof point.radius === 'string') {
+            // 检查是否包含逗号（数组格式）
+            if (point.radius.includes(',')) {
+              // 处理数组格式：如 "572.95,381.97,286.48"
+              const values = point.radius.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v))
+              return values.length > 0 ? values : [572.95] // 默认值为572.95
+            } else {
+              // 处理单个数字格式
+              const value = parseFloat(point.radius)
+              return !isNaN(value) ? [value] : [572.95] // 默认值为572.95
+            }
+          }
+          return [572.95] // 默认值
+        })
       },
       "XRange": {
         "DESCRIPTION": "X(East) range for computing",
