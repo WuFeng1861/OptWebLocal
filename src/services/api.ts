@@ -98,6 +98,8 @@ function buildNeconConstraints(
       // Unify 模式：所有井使用相同的约束
       const { firstCurve, secondCurve } = otherConstraints.maxTurnAngle.unify
       
+      if (otherConstraints.maxTurnAngle.unify.firstCurve.enabled && 
+          otherConstraints.maxTurnAngle.unify.firstCurve.angle.trim() !== '') {
         const angle = parseFloat(otherConstraints.maxTurnAngle.unify.firstCurve.angle)
         if (!isNaN(angle)) {
           // 将角度转换为弧度：angle° = angle * π / 180
