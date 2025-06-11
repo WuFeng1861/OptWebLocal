@@ -179,14 +179,6 @@ function buildNeconConstraints(
       }
     }
     
-    // 处理 Layers 约束
-    if (otherConstraints.layers.mode === 'specify') {
-      const layerConstraint = otherConstraints.layers.specify[wellIndex]
-      if (layerConstraint && layerConstraint.formula.trim() !== '') {
-        wellConstraints.push(layerConstraint.formula.trim())
-      }
-    }
-    
     // 如果该井有约束，则添加到总约束数组中
     if (wellConstraints.length > 0) {
       constraints.push(wellConstraints)
