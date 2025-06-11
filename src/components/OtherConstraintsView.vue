@@ -115,8 +115,8 @@ watch(numberOfWells, (newValue) => {
   while (maxTurnAngleSpecifyData.value.length < newValue) {
     maxTurnAngleSpecifyData.value.push({
       wellNo: maxTurnAngleSpecifyData.value.length + 1,
-      firstCurve: '90',
-      secondCurve: '90'
+      firstCurve: '',
+      secondCurve: ''
     })
   }
   while (maxTurnAngleSpecifyData.value.length > newValue) {
@@ -127,7 +127,7 @@ watch(numberOfWells, (newValue) => {
   while (customFunctionSpecifyData.value.length < newValue) {
     customFunctionSpecifyData.value.push({
       wellNo: customFunctionSpecifyData.value.length + 1,
-      customFunction: 'theta1(2)-pi/2; theta2(3)-deg2rad(80)'
+      customFunction: ''
     })
   }
   while (customFunctionSpecifyData.value.length > newValue) {
@@ -278,10 +278,15 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
                 </div>
                 <div class="flex items-center space-x-1">
                   <input
-                      type="number"
+                      type="text"
                       v-model="otherConstraints.firstCurveAngle"
+                      @input="handleAngleInput(otherConstraints, 'firstCurveAngle', $event)"
+                      @blur="handleAngleBlur(otherConstraints, 'firstCurveAngle', $event)"
                       class="border rounded px-2 py-1 w-20 text-sm text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       :disabled="!otherConstraints.firstCurveEnabled"
+                      min="0"
+                      max="180"
+                      step="0.1"
                   >
                   <span class="text-sm">°</span>
                 </div>
@@ -301,10 +306,15 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
                 </div>
                 <div class="flex items-center space-x-1">
                   <input
-                      type="number"
+                      type="text"
                       v-model="otherConstraints.secondCurveAngle"
+                      @input="handleAngleInput(otherConstraints, 'secondCurveAngle', $event)"
+                      @blur="handleAngleBlur(otherConstraints, 'secondCurveAngle', $event)"
                       class="border rounded px-2 py-1 w-20 text-sm text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       :disabled="!otherConstraints.secondCurveEnabled"
+                      min="0"
+                      max="180"
+                      step="0.1"
                   >
                   <span class="text-sm">°</span>
                 </div>
@@ -357,7 +367,7 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
                         min="0"
                         max="180"
                         step="0.1"
-                        placeholder="90"
+                        placeholder=""
                       >
                     </td>
                     <td>
@@ -369,7 +379,7 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
                         min="0"
                         max="180"
                         step="0.1"
-                        placeholder="90"
+                        placeholder=""
                       >
                     </td>
                   </tr>
@@ -395,7 +405,7 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
                         <input
                           type="text"
                           v-model="item.customFunction"
-                          placeholder="theta1(2)-pi/2; theta2(3)-deg2rad(80)"
+                          placeholder=""
                         >
                       </td>
                     </tr>

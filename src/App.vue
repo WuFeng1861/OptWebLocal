@@ -64,10 +64,10 @@ interface OtherConstraintsState {
   drillSiteEnabled: boolean
   drillSiteFormula: string
   firstCurveEnabled: boolean
-  firstCurveAngle: number
+  firstCurveAngle: string
   firstCurveSelectedWells: number[]
   secondCurveEnabled: boolean
-  secondCurveAngle: number
+  secondCurveAngle: string
   secondCurveSelectedWells: number[]
   customFunctionEnabled: boolean
   customFunctionFormula: string
@@ -114,10 +114,10 @@ const otherConstraints = ref<OtherConstraintsState>({
   drillSiteEnabled: false,
   drillSiteFormula: '',
   firstCurveEnabled: false,
-  firstCurveAngle: 90,
+  firstCurveAngle: '',
   firstCurveSelectedWells: [-1],
   secondCurveEnabled: false,
-  secondCurveAngle: 90,
+  secondCurveAngle: '',
   secondCurveSelectedWells: [-1],
   customFunctionEnabled: false,
   customFunctionFormula: '',
