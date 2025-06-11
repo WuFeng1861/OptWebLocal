@@ -2,7 +2,6 @@
 import { inject, watch, ref, computed, watchEffect } from 'vue'
 import { buildRequestData, sendComputeRequest } from '../services/api'
 import { ElMessage } from 'element-plus'
-import { ElMessage } from 'element-plus'
 
 const computeState = inject<Ref<{
   problemType: string;
