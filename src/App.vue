@@ -112,7 +112,7 @@ const doglegPoints = ref<DoglegPoint[]>([{
 // Other Constraints state
 const otherConstraints = ref<OtherConstraintsState>({
   drillSiteEnabled: false,
-  drillSiteFormula: 'Y-1000',
+  drillSiteFormula: '',
   firstCurveEnabled: false,
   firstCurveAngle: 90,
   firstCurveSelectedWells: [-1],
@@ -120,7 +120,7 @@ const otherConstraints = ref<OtherConstraintsState>({
   secondCurveAngle: 90,
   secondCurveSelectedWells: [-1],
   customFunctionEnabled: false,
-  customFunctionFormula: 'theta1(2)-pi/2; theta2(3)-deg2rad(80)',
+  customFunctionFormula: '',
   numberOfSurfaces: 0
 })
 
