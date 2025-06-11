@@ -2,6 +2,7 @@
 import { inject, watch, ref, computed, watchEffect } from 'vue'
 import { buildRequestData, sendComputeRequest } from '../services/api'
 import { ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus'
 
 const computeState = inject<Ref<{
   problemType: string;
@@ -257,13 +258,15 @@ const sendRequest = async () => {
     
     if (validationErrors.length > 0) {
       // 显示验证错误信息
-      const errorMessage = 'Data validation failed. Please check the following issues:\n\n' + validationErrors.join('\n')
+      const errorMessage = 'Data validation failed. Please check the following issues:<br><br>' + 
+        validationErrors.map(error => `• ${error}`).join('<br>')
+      
       ElMessage({
         message: errorMessage,
         type: 'error',
         duration: 0, // 不自动关闭，需要用户手动关闭
         showClose: true,
-        dangerouslyUseHTMLString: false
+        dangerouslyUseHTMLString: true // 启用 HTML 渲染
       })
       return
     }
