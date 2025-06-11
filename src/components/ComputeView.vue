@@ -156,8 +156,111 @@ watchEffect(() => {
 // 控制折叠面板的展开状态，默认全部展开
 const activeNames = ref(['cost-contour', 'optimal-layout', 'optimal-site'])
 
+// 数据验证函数
+const validateData = () => {
+  const errors: string[] = []
+  
+  // 1. 检查 Number of Wells 不能小于1
+  if (numberOfWells.value < 1) {
+    errors.push('井数不能小于1')
+  }
+  
+  // 2. 检查 Target Points (PT) 不能有空值
+  for (let i = 0; i < targetPoints.value.length; i++) {
+    const point = targetPoints.value[i]
+    if (!point.x || !point.y || !point.z) {
+      errors.push(`目标点 ${i + 1} 的坐标不能为空 (P2x: ${point.x}, P2y: ${point.y}, P2z: ${point.z})`)
+    }
+    
+    // 检查是否为有效数字
+    if (point.x && isNaN(parseFloat(point.x))) {
+      errors.push(`目标点 ${i + 1} 的 P2x 必须是有效数字`)
+    }
+    if (point.y && isNaN(parseFloat(point.y))) {
+      errors.push(`目标点 ${i + 1} 的 P2y 必须是有效数字`)
+    }
+    if (point.z && isNaN(parseFloat(point.z))) {
+      errors.push(`目标点 ${i + 1} 的 P2z 必须是有效数字`)
+    }
+  }
+  
+  // 3. 检查 Entry Directions (VT) 不能有空值
+  for (let i = 0; i < entryDirections.value.length; i++) {
+    const direction = entryDirections.value[i]
+    if (!direction.x || !direction.y || !direction.z) {
+      errors.push(`入口方向 ${i + 1} 的坐标不能为空 (V2x: ${direction.x}, V2y: ${direction.y}, V2z: ${direction.z})`)
+    }
+    
+    // 检查是否为有效数字
+    if (direction.x && isNaN(parseFloat(direction.x))) {
+      errors.push(`入口方向 ${i + 1} 的 V2x 必须是有效数字`)
+    }
+    if (direction.y && isNaN(parseFloat(direction.y))) {
+      errors.push(`入口方向 ${i + 1} 的 V2y 必须是有效数字`)
+    }
+    if (direction.z && isNaN(parseFloat(direction.z))) {
+      errors.push(`入口方向 ${i + 1} 的 V2z 必须是有效数字`)
+    }
+  }
+  
+  // 4. 检查 Dogleg 数据不能有空值，且 dogleg 和 radius 的数据位数要一致
+  for (let i = 0; i < doglegPoints.value.length; i++) {
+    const point = doglegPoints.value[i]
+    
+    // 检查 dogleg 不能为空
+    if (!point.dogleg || point.dogleg.toString().trim() === '') {
+      errors.push(`井 ${i + 1} 的 dogleg 值不能为空`)
+      continue
+    }
+    
+    // 检查 radius 不能为空
+    if (!point.radius || point.radius.toString().trim() === '') {
+      errors.push(`井 ${i + 1} 的 radius 值不能为空`)
+      continue
+    }
+    
+    // 解析 dogleg 和 radius 的数组长度
+    const doglegStr = point.dogleg.toString().replace(/，/g, ',')
+    const radiusStr = point.radius.toString().replace(/，/g, ',')
+    
+    const doglegValues = doglegStr.split(',').map(v => v.trim()).filter(v => v !== '')
+    const radiusValues = radiusStr.split(',').map(v => v.trim()).filter(v => v !== '')
+    
+    // 检查 dogleg 值是否都是有效数字
+    for (let j = 0; j < doglegValues.length; j++) {
+      if (isNaN(parseFloat(doglegValues[j]))) {
+        errors.push(`井 ${i + 1} 的 dogleg 第 ${j + 1} 个值必须是有效数字`)
+      }
+    }
+    
+    // 检查 radius 值是否都是有效数字
+    for (let j = 0; j < radiusValues.length; j++) {
+      if (isNaN(parseFloat(radiusValues[j]))) {
+        errors.push(`井 ${i + 1} 的 radius 第 ${j + 1} 个值必须是有效数字`)
+      }
+    }
+    
+    // 检查 dogleg 和 radius 的数据位数是否一致
+    if (doglegValues.length !== radiusValues.length) {
+      errors.push(`井 ${i + 1} 的 dogleg 和 radius 数据位数不一致 (dogleg: ${doglegValues.length} 个值, radius: ${radiusValues.length} 个值)`)
+    }
+  }
+  
+  return errors
+}
+
 const sendRequest = async () => {
   try {
+    // 进行数据验证
+    const validationErrors = validateData()
+    
+    if (validationErrors.length > 0) {
+      // 显示验证错误信息
+      const errorMessage = '数据验证失败，请检查以下问题：\n\n' + validationErrors.join('\n')
+      alert(errorMessage)
+      return
+    }
+    
     const data = buildRequestData(
         numberOfWells.value,
         targetPoints.value,
