@@ -104,7 +104,7 @@ watch(numberOfWells, (newValue) => {
   while (drillSiteSpecifyData.value.length < newValue) {
     drillSiteSpecifyData.value.push({
       wellNo: drillSiteSpecifyData.value.length + 1,
-      formula: 'Y-1000'
+      formula: ''
     })
   }
   while (drillSiteSpecifyData.value.length > newValue) {
@@ -227,7 +227,7 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
                       <input
                         type="text"
                         v-model="item.formula"
-                        placeholder="e.g. Y-1000"
+                        placeholder=""
                       >
                     </td>
                   </tr>
