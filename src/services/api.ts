@@ -102,9 +102,27 @@ function buildNeconConstraints(
           otherConstraints.maxTurnAngle.unify.firstCurve.angle.trim() !== '') {
         const angle = parseFloat(otherConstraints.maxTurnAngle.unify.firstCurve.angle)
         if (!isNaN(angle)) {
-          // 将角度转换为弧度：angle° = angle * π / 180
-          const angleInRadians = angle * Math.PI / 180
-          wellConstraints.push(`-theta1+${angleInRadians.toFixed(6)}`)
+          // 将角度转换为弧度表达式：angle° = angle * π / 180
+          if (angle === 90) {
+            wellConstraints.push(`-theta1+pi/2`)
+          } else if (angle === 180) {
+            wellConstraints.push(`-theta1+pi`)
+          } else if (angle === 30) {
+            wellConstraints.push(`-theta1+pi/6`)
+          } else if (angle === 45) {
+            wellConstraints.push(`-theta1+pi/4`)
+          } else if (angle === 60) {
+            wellConstraints.push(`-theta1+pi/3`)
+          } else if (angle === 120) {
+            wellConstraints.push(`-theta1+2*pi/3`)
+          } else if (angle === 135) {
+            wellConstraints.push(`-theta1+3*pi/4`)
+          } else if (angle === 150) {
+            wellConstraints.push(`-theta1+5*pi/6`)
+          } else {
+            // 对于其他角度，使用通用格式：angle*pi/180
+            wellConstraints.push(`-theta1+${angle}*pi/180`)
+          }
         }
       }
       
@@ -112,9 +130,27 @@ function buildNeconConstraints(
           otherConstraints.maxTurnAngle.unify.secondCurve.angle.trim() !== '') {
         const angle = parseFloat(otherConstraints.maxTurnAngle.unify.secondCurve.angle)
         if (!isNaN(angle)) {
-          // 将角度转换为弧度：angle° = angle * π / 180
-          const angleInRadians = angle * Math.PI / 180
-          wellConstraints.push(`-theta2+${angleInRadians.toFixed(6)}`)
+          // 将角度转换为弧度表达式：angle° = angle * π / 180
+          if (angle === 90) {
+            wellConstraints.push(`-theta2+pi/2`)
+          } else if (angle === 180) {
+            wellConstraints.push(`-theta2+pi`)
+          } else if (angle === 30) {
+            wellConstraints.push(`-theta2+pi/6`)
+          } else if (angle === 45) {
+            wellConstraints.push(`-theta2+pi/4`)
+          } else if (angle === 60) {
+            wellConstraints.push(`-theta2+pi/3`)
+          } else if (angle === 120) {
+            wellConstraints.push(`-theta2+2*pi/3`)
+          } else if (angle === 135) {
+            wellConstraints.push(`-theta2+3*pi/4`)
+          } else if (angle === 150) {
+            wellConstraints.push(`-theta2+5*pi/6`)
+          } else {
+            // 对于其他角度，使用通用格式：angle*pi/180
+            wellConstraints.push(`-theta2+${angle}*pi/180`)
+          }
         }
       }
       
@@ -129,16 +165,52 @@ function buildNeconConstraints(
         if (angleConstraint.firstCurve.trim() !== '') {
           const angle = parseFloat(angleConstraint.firstCurve)
           if (!isNaN(angle)) {
-            const angleInRadians = angle * Math.PI / 180
-            wellConstraints.push(`-theta1+${angleInRadians.toFixed(6)}`)
+            // 将角度转换为弧度表达式
+            if (angle === 90) {
+              wellConstraints.push(`-theta1+pi/2`)
+            } else if (angle === 180) {
+              wellConstraints.push(`-theta1+pi`)
+            } else if (angle === 30) {
+              wellConstraints.push(`-theta1+pi/6`)
+            } else if (angle === 45) {
+              wellConstraints.push(`-theta1+pi/4`)
+            } else if (angle === 60) {
+              wellConstraints.push(`-theta1+pi/3`)
+            } else if (angle === 120) {
+              wellConstraints.push(`-theta1+2*pi/3`)
+            } else if (angle === 135) {
+              wellConstraints.push(`-theta1+3*pi/4`)
+            } else if (angle === 150) {
+              wellConstraints.push(`-theta1+5*pi/6`)
+            } else {
+              wellConstraints.push(`-theta1+${angle}*pi/180`)
+            }
           }
         }
         
         if (angleConstraint.secondCurve.trim() !== '') {
           const angle = parseFloat(angleConstraint.secondCurve)
           if (!isNaN(angle)) {
-            const angleInRadians = angle * Math.PI / 180
-            wellConstraints.push(`-theta2+${angleInRadians.toFixed(6)}`)
+            // 将角度转换为弧度表达式
+            if (angle === 90) {
+              wellConstraints.push(`-theta2+pi/2`)
+            } else if (angle === 180) {
+              wellConstraints.push(`-theta2+pi`)
+            } else if (angle === 30) {
+              wellConstraints.push(`-theta2+pi/6`)
+            } else if (angle === 45) {
+              wellConstraints.push(`-theta2+pi/4`)
+            } else if (angle === 60) {
+              wellConstraints.push(`-theta2+pi/3`)
+            } else if (angle === 120) {
+              wellConstraints.push(`-theta2+2*pi/3`)
+            } else if (angle === 135) {
+              wellConstraints.push(`-theta2+3*pi/4`)
+            } else if (angle === 150) {
+              wellConstraints.push(`-theta2+5*pi/6`)
+            } else {
+              wellConstraints.push(`-theta2+${angle}*pi/180`)
+            }
           }
         }
       }
