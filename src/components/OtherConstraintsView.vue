@@ -13,32 +13,49 @@ interface Surface {
 
 const numberOfWells = inject<Readonly<Ref<number>>>('numberOfWells')!
 const otherConstraints = inject<Ref<{
-  drillSiteEnabled: boolean;
-  drillSiteFormula: string;
-  firstCurveEnabled: boolean;
-  firstCurveAngle: number;
-  firstCurveSelectedWells: number[];
-  secondCurveEnabled: boolean;
-  secondCurveAngle: number;
-  secondCurveSelectedWells: number[];
-  customFunctionEnabled: boolean;
-  customFunctionFormula: string;
-  numberOfSurfaces: number;
+  drillSite: {
+    mode: 'unify' | 'specify'
+    unify: {
+      enabled: boolean
+      formula: string
+    }
+    specify: Array<{ wellNo: number; formula: string }>
+  }
+  maxTurnAngle: {
+    mode: 'unify' | 'specify'
+    unify: {
+      firstCurve: {
+        enabled: boolean
+        angle: string
+      }
+      secondCurve: {
+        enabled: boolean
+        angle: string
+      }
+      customFunction: {
+        enabled: boolean
+        formula: string
+      }
+    }
+    specify: {
+      angles: Array<{ wellNo: number; firstCurve: string; secondCurve: string }>
+      customFunctions: Array<{ wellNo: number; customFunction: string }>
+    }
+  }
+  layers: {
+    mode: 'unify' | 'specify'
+    unify: {
+      numberOfSurfaces: number
+    }
+    specify: Array<{ wellNo: number; formula: string }>
+  }
 }>>('otherConstraints')!
 
 // 控制折叠面板的展开状态
 const activeNames = ref(['drill-site', 'max-turn-angle', 'layers'])
 
 // 控制各部分的Unify/Specify模式
-const drillSiteMode = ref('unify')
-const maxTurnAngleMode = ref('unify')
-const layersMode = ref('unify')
-
-// Specify模式下的表格数据
-const drillSiteSpecifyData = ref<Array<{ wellNo: number; formula: string }>>([])
-const maxTurnAngleSpecifyData = ref<Array<{ wellNo: number; firstCurve: string; secondCurve: string }>>([])
-const customFunctionSpecifyData = ref<Array<{ wellNo: number; customFunction: string }>>([])
-const layersSpecifyData = ref<Array<{ wellNo: number; formula: string }>>([])
+// 注意：模式控制现在直接使用 otherConstraints 中的 mode 属性
 
 const surfaces = inject<Ref<Surface[]>>('surfaces')!
 const activeSurfaceIndex = inject<Ref<number>>('activeSurfaceIndex')!
@@ -101,53 +118,53 @@ const handleAngleBlur = (obj: any, key: string, event: Event) => {
 // 监听井数变化，更新Specify表格数据
 watch(numberOfWells, (newValue) => {
   // 更新Drill Site Specify数据
-  while (drillSiteSpecifyData.value.length < newValue) {
-    drillSiteSpecifyData.value.push({
-      wellNo: drillSiteSpecifyData.value.length + 1,
+  while (otherConstraints.value.drillSite.specify.length < newValue) {
+    otherConstraints.value.drillSite.specify.push({
+      wellNo: otherConstraints.value.drillSite.specify.length + 1,
       formula: ''
     })
   }
-  while (drillSiteSpecifyData.value.length > newValue) {
-    drillSiteSpecifyData.value.pop()
+  while (otherConstraints.value.drillSite.specify.length > newValue) {
+    otherConstraints.value.drillSite.specify.pop()
   }
 
   // 更新Max Turn Angle Specify数据
-  while (maxTurnAngleSpecifyData.value.length < newValue) {
-    maxTurnAngleSpecifyData.value.push({
-      wellNo: maxTurnAngleSpecifyData.value.length + 1,
+  while (otherConstraints.value.maxTurnAngle.specify.angles.length < newValue) {
+    otherConstraints.value.maxTurnAngle.specify.angles.push({
+      wellNo: otherConstraints.value.maxTurnAngle.specify.angles.length + 1,
       firstCurve: '',
       secondCurve: ''
     })
   }
-  while (maxTurnAngleSpecifyData.value.length > newValue) {
-    maxTurnAngleSpecifyData.value.pop()
+  while (otherConstraints.value.maxTurnAngle.specify.angles.length > newValue) {
+    otherConstraints.value.maxTurnAngle.specify.angles.pop()
   }
 
   // 更新Custom Function Specify数据
-  while (customFunctionSpecifyData.value.length < newValue) {
-    customFunctionSpecifyData.value.push({
-      wellNo: customFunctionSpecifyData.value.length + 1,
+  while (otherConstraints.value.maxTurnAngle.specify.customFunctions.length < newValue) {
+    otherConstraints.value.maxTurnAngle.specify.customFunctions.push({
+      wellNo: otherConstraints.value.maxTurnAngle.specify.customFunctions.length + 1,
       customFunction: ''
     })
   }
-  while (customFunctionSpecifyData.value.length > newValue) {
-    customFunctionSpecifyData.value.pop()
+  while (otherConstraints.value.maxTurnAngle.specify.customFunctions.length > newValue) {
+    otherConstraints.value.maxTurnAngle.specify.customFunctions.pop()
   }
 
   // 更新Layers Specify数据
-  while (layersSpecifyData.value.length < newValue) {
-    layersSpecifyData.value.push({
-      wellNo: layersSpecifyData.value.length + 1,
+  while (otherConstraints.value.layers.specify.length < newValue) {
+    otherConstraints.value.layers.specify.push({
+      wellNo: otherConstraints.value.layers.specify.length + 1,
       formula: ''
     })
   }
-  while (layersSpecifyData.value.length > newValue) {
-    layersSpecifyData.value.pop()
+  while (otherConstraints.value.layers.specify.length > newValue) {
+    otherConstraints.value.layers.specify.pop()
   }
 }, { immediate: true })
 
 // Watch for changes in numberOfSurfaces and update surfaces array
-watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
+watch(() => otherConstraints.value.layers.unify.numberOfSurfaces, (newValue) => {
   while (surfaces.value.length < newValue) {
     surfaces.value.push({
       depth: -1000,
@@ -175,7 +192,7 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
             <label class="flex items-center space-x-2">
               <input
                 type="radio"
-                v-model="drillSiteMode"
+                v-model="otherConstraints.drillSite.mode"
                 value="unify"
                 class="text-blue-600"
               >
@@ -184,7 +201,7 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
             <label class="flex items-center space-x-2">
               <input
                 type="radio"
-                v-model="drillSiteMode"
+                v-model="otherConstraints.drillSite.mode"
                 value="specify"
                 class="text-blue-600"
               >
@@ -193,19 +210,19 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
           </div>
 
           <!-- Unify模式 -->
-          <div v-if="drillSiteMode === 'unify'" class="space-y-3">
+          <div v-if="otherConstraints.drillSite.mode === 'unify'" class="space-y-3">
             <div class="flex items-center space-x-2">
               <input
                   type="checkbox"
-                  v-model="otherConstraints.drillSiteEnabled"
+                  v-model="otherConstraints.drillSite.unify.enabled"
                   class="rounded border-gray-300"
               >
               <span class="text-sm italic whitespace-nowrap">f(X,Y) =</span>
               <input
                   type="text"
-                  v-model="otherConstraints.drillSiteFormula"
+                  v-model="otherConstraints.drillSite.unify.formula"
                   class="border rounded px-2 py-1 w-64 text-sm"
-                  :disabled="!otherConstraints.drillSiteEnabled"
+                  :disabled="!otherConstraints.drillSite.unify.enabled"
               >
             </div>
           </div>
@@ -221,7 +238,7 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(item, index) in drillSiteSpecifyData" :key="index">
+                  <tr v-for="(item, index) in otherConstraints.drillSite.specify" :key="index">
                     <td>{{ item.wellNo }}</td>
                     <td>
                       <input
@@ -246,7 +263,7 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
             <label class="flex items-center space-x-2">
               <input
                 type="radio"
-                v-model="maxTurnAngleMode"
+                v-model="otherConstraints.maxTurnAngle.mode"
                 value="unify"
                 class="text-blue-600"
               >
@@ -255,7 +272,7 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
             <label class="flex items-center space-x-2">
               <input
                 type="radio"
-                v-model="maxTurnAngleMode"
+                v-model="otherConstraints.maxTurnAngle.mode"
                 value="specify"
                 class="text-blue-600"
               >
@@ -264,14 +281,14 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
           </div>
 
           <!-- Unify模式 -->
-          <div v-if="maxTurnAngleMode === 'unify'" class="space-y-4">
+          <div v-if="otherConstraints.maxTurnAngle.mode === 'unify'" class="space-y-4">
             <!-- First Curve -->
             <div class="space-y-2">
               <div class="flex items-center space-x-4">
                 <div class="flex items-center space-x-2">
                   <input
                       type="checkbox"
-                      v-model="otherConstraints.firstCurveEnabled"
+                      v-model="otherConstraints.maxTurnAngle.unify.firstCurve.enabled"
                       class="rounded border-gray-300"
                   >
                   <span class="text-sm">1st curve (buildup) <=</span>
@@ -279,11 +296,11 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
                 <div class="flex items-center space-x-1">
                   <input
                       type="text"
-                      v-model="otherConstraints.firstCurveAngle"
-                      @input="handleAngleInput(otherConstraints, 'firstCurveAngle', $event)"
-                      @blur="handleAngleBlur(otherConstraints, 'firstCurveAngle', $event)"
+                      v-model="otherConstraints.maxTurnAngle.unify.firstCurve.angle"
+                      @input="handleAngleInput(otherConstraints.maxTurnAngle.unify.firstCurve, 'angle', $event)"
+                      @blur="handleAngleBlur(otherConstraints.maxTurnAngle.unify.firstCurve, 'angle', $event)"
                       class="border rounded px-2 py-1 w-20 text-sm text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      :disabled="!otherConstraints.firstCurveEnabled"
+                      :disabled="!otherConstraints.maxTurnAngle.unify.firstCurve.enabled"
                       min="0"
                       max="180"
                       step="0.1"
@@ -299,7 +316,7 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
                 <div class="flex items-center space-x-2">
                   <input
                       type="checkbox"
-                      v-model="otherConstraints.secondCurveEnabled"
+                      v-model="otherConstraints.maxTurnAngle.unify.secondCurve.enabled"
                       class="rounded border-gray-300"
                   >
                   <span class="text-sm">2nd curve (buildup/drop) <=</span>
@@ -307,11 +324,11 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
                 <div class="flex items-center space-x-1">
                   <input
                       type="text"
-                      v-model="otherConstraints.secondCurveAngle"
-                      @input="handleAngleInput(otherConstraints, 'secondCurveAngle', $event)"
-                      @blur="handleAngleBlur(otherConstraints, 'secondCurveAngle', $event)"
+                      v-model="otherConstraints.maxTurnAngle.unify.secondCurve.angle"
+                      @input="handleAngleInput(otherConstraints.maxTurnAngle.unify.secondCurve, 'angle', $event)"
+                      @blur="handleAngleBlur(otherConstraints.maxTurnAngle.unify.secondCurve, 'angle', $event)"
                       class="border rounded px-2 py-1 w-20 text-sm text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      :disabled="!otherConstraints.secondCurveEnabled"
+                      :disabled="!otherConstraints.maxTurnAngle.unify.secondCurve.enabled"
                       min="0"
                       max="180"
                       step="0.1"
@@ -326,7 +343,7 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
               <div class="flex items-center space-x-2">
                 <input
                     type="checkbox"
-                    v-model="otherConstraints.customFunctionEnabled"
+                    v-model="otherConstraints.maxTurnAngle.unify.customFunction.enabled"
                     class="rounded border-gray-300"
                 >
                 <span class="text-sm">Custom Function f(theta1, theta2)≥0:</span>
@@ -335,9 +352,9 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
                 <span class="text-sm italic whitespace-nowrap">f(theta1, theta2) =</span>
                 <input
                     type="text"
-                    v-model="otherConstraints.customFunctionFormula"
+                    v-model="otherConstraints.maxTurnAngle.unify.customFunction.formula"
                     class="border rounded px-2 py-1 text-sm"
-                    :disabled="!otherConstraints.customFunctionEnabled"
+                    :disabled="!otherConstraints.maxTurnAngle.unify.customFunction.enabled"
                 >
               </div>
             </div>
@@ -356,7 +373,7 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(item, index) in maxTurnAngleSpecifyData" :key="index">
+                  <tr v-for="(item, index) in otherConstraints.maxTurnAngle.specify.angles" :key="index">
                     <td>{{ item.wellNo }}</td>
                     <td>
                       <input
@@ -399,7 +416,7 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(item, index) in customFunctionSpecifyData" :key="index">
+                    <tr v-for="(item, index) in otherConstraints.maxTurnAngle.specify.customFunctions" :key="index">
                       <td>{{ item.wellNo }}</td>
                       <td>
                         <input
@@ -425,7 +442,7 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
             <label class="flex items-center space-x-2">
               <input
                 type="radio"
-                v-model="layersMode"
+                v-model="otherConstraints.layers.mode"
                 value="unify"
                 class="text-blue-600"
               >
@@ -434,7 +451,7 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
             <label class="flex items-center space-x-2">
               <input
                 type="radio"
-                v-model="layersMode"
+                v-model="otherConstraints.layers.mode"
                 value="specify"
                 class="text-blue-600"
               >
@@ -443,20 +460,20 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
           </div>
 
           <!-- Unify模式 -->
-          <div v-if="layersMode === 'unify'" class="space-y-4">
+          <div v-if="otherConstraints.layers.mode === 'unify'" class="space-y-4">
             <!-- Number of Surfaces -->
             <div class="flex items-center space-x-3">
               <span class="text-sm">Number of Surfaces:</span>
               <input
                   type="number"
-                  v-model="otherConstraints.numberOfSurfaces"
+                  v-model="otherConstraints.layers.unify.numberOfSurfaces"
                   min="0"
                   class="border rounded px-2 py-1 w-20 text-sm text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               >
             </div>
 
             <!-- Surface Tabs -->
-            <div v-if="otherConstraints.numberOfSurfaces > 0" class="border rounded">
+            <div v-if="otherConstraints.layers.unify.numberOfSurfaces > 0" class="border rounded">
               <!-- Tab Headers -->
               <div class="flex flex-wrap border-b">
                 <button
@@ -557,7 +574,7 @@ watch(() => otherConstraints.value.numberOfSurfaces, (newValue) => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(item, index) in layersSpecifyData" :key="index">
+                  <tr v-for="(item, index) in otherConstraints.layers.specify" :key="index">
                     <td>{{ item.wellNo }}</td>
                     <td>
                       <input

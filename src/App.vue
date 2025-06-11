@@ -61,17 +61,47 @@ interface ComputeState {
 }
 
 interface OtherConstraintsState {
-  drillSiteEnabled: boolean
-  drillSiteFormula: string
-  firstCurveEnabled: boolean
-  firstCurveAngle: string
-  firstCurveSelectedWells: number[]
-  secondCurveEnabled: boolean
-  secondCurveAngle: string
-  secondCurveSelectedWells: number[]
-  customFunctionEnabled: boolean
-  customFunctionFormula: string
-  numberOfSurfaces: number
+  // Drill Site Location 配置
+  drillSite: {
+    mode: 'unify' | 'specify'
+    unify: {
+      enabled: boolean
+      formula: string
+    }
+    specify: Array<{ wellNo: number; formula: string }>
+  }
+  
+  // Max Turn Angle 配置
+  maxTurnAngle: {
+    mode: 'unify' | 'specify'
+    unify: {
+      firstCurve: {
+        enabled: boolean
+        angle: string
+      }
+      secondCurve: {
+        enabled: boolean
+        angle: string
+      }
+      customFunction: {
+        enabled: boolean
+        formula: string
+      }
+    }
+    specify: {
+      angles: Array<{ wellNo: number; firstCurve: string; secondCurve: string }>
+      customFunctions: Array<{ wellNo: number; customFunction: string }>
+    }
+  }
+  
+  // Layers 配置
+  layers: {
+    mode: 'unify' | 'specify'
+    unify: {
+      numberOfSurfaces: number
+    }
+    specify: Array<{ wellNo: number; formula: string }>
+  }
 }
 
 const activeTab = ref('completion-intervals')
@@ -111,17 +141,42 @@ const doglegPoints = ref<DoglegPoint[]>([{
 
 // Other Constraints state
 const otherConstraints = ref<OtherConstraintsState>({
-  drillSiteEnabled: false,
-  drillSiteFormula: '',
-  firstCurveEnabled: false,
-  firstCurveAngle: '',
-  firstCurveSelectedWells: [-1],
-  secondCurveEnabled: false,
-  secondCurveAngle: '',
-  secondCurveSelectedWells: [-1],
-  customFunctionEnabled: false,
-  customFunctionFormula: '',
-  numberOfSurfaces: 0
+  drillSite: {
+    mode: 'unify',
+    unify: {
+      enabled: false,
+      formula: ''
+    },
+    specify: []
+  },
+  maxTurnAngle: {
+    mode: 'unify',
+    unify: {
+      firstCurve: {
+        enabled: false,
+        angle: ''
+      },
+      secondCurve: {
+        enabled: false,
+        angle: ''
+      },
+      customFunction: {
+        enabled: false,
+        formula: ''
+      }
+    },
+    specify: {
+      angles: [],
+      customFunctions: []
+    }
+  },
+  layers: {
+    mode: 'unify',
+    unify: {
+      numberOfSurfaces: 0
+    },
+    specify: []
+  }
 })
 
 // Compute state
