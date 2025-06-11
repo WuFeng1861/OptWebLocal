@@ -28,6 +28,7 @@ const entryDirections = inject<Ref<Array<{x: string, y: string, z: string}>>>('e
 const kickoffPoints = inject<Ref<Array<{pkx: number | null, pky: number | null, pkz: number}>>>('kickoffPoints')!
 const kickoffDirections = inject<Ref<Array<{vkx: number | null, vky: number | null, vkz: number}>>>('kickoffDirections')!
 const doglegPoints = inject<Ref<Array<{dogleg: number, radius: number}>>>('doglegPoints')!
+const otherConstraints = inject<Ref<any>>('otherConstraints')!
 
 // 计算X Range的自动值
 const calculateAutoXRange = () => {
@@ -164,7 +165,8 @@ const sendRequest = async () => {
         kickoffPoints.value,
         kickoffDirections.value,
         doglegPoints.value,
-        computeState.value
+        computeState.value,
+        otherConstraints.value
     )
     const response = await sendComputeRequest(data)
     console.log('Response:', response)

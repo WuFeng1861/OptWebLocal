@@ -43,6 +43,147 @@ interface ComputeState {
   }
 }
 
+interface OtherConstraintsState {
+  drillSite: {
+    mode: 'unify' | 'specify'
+    unify: {
+      enabled: boolean
+      formula: string
+    }
+    specify: Array<{ wellNo: number; formula: string }>
+  }
+  maxTurnAngle: {
+    mode: 'unify' | 'specify'
+    unify: {
+      firstCurve: {
+        enabled: boolean
+        angle: string
+      }
+      secondCurve: {
+        enabled: boolean
+        angle: string
+      }
+      customFunction: {
+        enabled: boolean
+        formula: string
+      }
+    }
+    specify: {
+      angles: Array<{ wellNo: number; firstCurve: string; secondCurve: string }>
+      customFunctions: Array<{ wellNo: number; customFunction: string }>
+    }
+  }
+  layers: {
+    mode: 'unify' | 'specify'
+    unify: {
+      numberOfSurfaces: number
+    }
+    specify: Array<{ wellNo: number; formula: string }>
+  }
+}
+
+// 构建 necon 约束数据
+function buildNeconConstraints(
+  numberOfWells: number,
+  otherConstraints: OtherConstraintsState
+): string[][] | null {
+  const constraints: string[][] = []
+  
+  // 为每个井构建约束数组
+  for (let wellIndex = 0; wellIndex < numberOfWells; wellIndex++) {
+    const wellConstraints: string[] = []
+    
+    // 处理 Max Turn Angle 约束
+    if (otherConstraints.maxTurnAngle.mode === 'unify') {
+      // Unify 模式：所有井使用相同的约束
+      const { firstCurve, secondCurve } = otherConstraints.maxTurnAngle.unify
+      
+        const angle = parseFloat(otherConstraints.maxTurnAngle.unify.firstCurve.angle)
+        if (!isNaN(angle)) {
+          // 将角度转换为弧度：angle° = angle * π / 180
+          const angleInRadians = angle * Math.PI / 180
+          wellConstraints.push(`-theta1+${angleInRadians.toFixed(6)}`)
+        }
+      }
+      
+      if (otherConstraints.maxTurnAngle.unify.secondCurve.enabled && 
+          otherConstraints.maxTurnAngle.unify.secondCurve.angle.trim() !== '') {
+        const angle = parseFloat(otherConstraints.maxTurnAngle.unify.secondCurve.angle)
+        if (!isNaN(angle)) {
+          // 将角度转换为弧度：angle° = angle * π / 180
+          const angleInRadians = angle * Math.PI / 180
+          wellConstraints.push(`-theta2+${angleInRadians.toFixed(6)}`)
+        }
+      }
+      
+      if (otherConstraints.maxTurnAngle.unify.customFunction.enabled && 
+          otherConstraints.maxTurnAngle.unify.customFunction.formula.trim() !== '') {
+        wellConstraints.push(otherConstraints.maxTurnAngle.unify.customFunction.formula.trim())
+      }
+    } else {
+      // Specify 模式：每个井使用独立的约束
+      const angleConstraint = otherConstraints.maxTurnAngle.specify.angles[wellIndex]
+      if (angleConstraint) {
+        if (angleConstraint.firstCurve.trim() !== '') {
+          const angle = parseFloat(angleConstraint.firstCurve)
+          if (!isNaN(angle)) {
+            const angleInRadians = angle * Math.PI / 180
+            wellConstraints.push(`-theta1+${angleInRadians.toFixed(6)}`)
+          }
+        }
+        
+        if (angleConstraint.secondCurve.trim() !== '') {
+          const angle = parseFloat(angleConstraint.secondCurve)
+          if (!isNaN(angle)) {
+            const angleInRadians = angle * Math.PI / 180
+            wellConstraints.push(`-theta2+${angleInRadians.toFixed(6)}`)
+          }
+        }
+      }
+      
+      const customConstraint = otherConstraints.maxTurnAngle.specify.customFunctions[wellIndex]
+      if (customConstraint && customConstraint.customFunction.trim() !== '') {
+        wellConstraints.push(customConstraint.customFunction.trim())
+      }
+    }
+    
+    // 处理 Drill Site Location 约束
+    if (otherConstraints.drillSite.mode === 'unify') {
+      // Unify 模式：所有井使用相同的约束
+      if (otherConstraints.drillSite.unify.enabled && 
+          otherConstraints.drillSite.unify.formula.trim() !== '') {
+        wellConstraints.push(` ${otherConstraints.drillSite.unify.formula.trim()}`)
+      }
+    } else {
+      // Specify 模式：每个井使用独立的约束
+      const drillSiteConstraint = otherConstraints.drillSite.specify[wellIndex]
+      if (drillSiteConstraint && drillSiteConstraint.formula.trim() !== '') {
+        wellConstraints.push(` ${drillSiteConstraint.formula.trim()}`)
+      }
+    }
+    
+    // 处理 Layers 约束
+    if (otherConstraints.layers.mode === 'specify') {
+      const layerConstraint = otherConstraints.layers.specify[wellIndex]
+      if (layerConstraint && layerConstraint.formula.trim() !== '') {
+        wellConstraints.push(layerConstraint.formula.trim())
+      }
+    }
+    
+    // 如果该井有约束，则添加到总约束数组中
+    if (wellConstraints.length > 0) {
+      constraints.push(wellConstraints)
+    } else {
+      // 如果没有约束，添加空数组或跳过
+      constraints.push([])
+    }
+  }
+  
+  // 如果所有井都没有约束，返回 null
+  const hasAnyConstraints = constraints.some(wellConstraints => wellConstraints.length > 0)
+  return hasAnyConstraints ? constraints : null
+}
+
 export function buildRequestData(
   numberOfWells: number,
   targetPoints: Point[],
@@ -50,9 +191,13 @@ export function buildRequestData(
   kickoffPoints: KickoffPoint[],
   kickoffDirections: KickoffDirection[],
   doglegPoints: DoglegPoint[],
-  computeState: ComputeState
+  computeState: ComputeState,
+  otherConstraints: OtherConstraintsState
 ) {
   const wellIndices = computeState.clusterSizes.map((item) => item.size);
+  
+  // 构建 necon 约束数据
+  const neconConstraints = buildNeconConstraints(numberOfWells, otherConstraints)
   
   return {
     "FIELDOPT INPUT BLOCK": {
@@ -167,7 +312,7 @@ export function buildRequestData(
       "necon": {
         "DESCRIPTION": "non-equal constraints",
         "UNIT": "",
-        "VALUE": null
+        "VALUE": neconConstraints
       },
       "lay_con": {
         "DESCRIPTION": "formation constraints in special layer(s)",
