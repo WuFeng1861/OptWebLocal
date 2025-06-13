@@ -135,8 +135,8 @@ const activeSurfaceIndex = ref(0)
 
 // Dogleg state
 const doglegPoints = ref<DoglegPoint[]>([{
-  dogleg: 3.00,
-  radius: 572.95
+  dogleg: '3.00',
+  radius: '572.95'
 }])
 
 // Other Constraints state
@@ -267,7 +267,7 @@ provide('updateNumberOfWells', (value: number) => {
   while (doglegPoints.value.length < value) {
     doglegPoints.value.push({
       dogleg: "3",
-      radius: 572.95
+      radius: '572.95'
     })
   }
   while (doglegPoints.value.length > value) {
