@@ -89,25 +89,10 @@ function buildNeconConstraints(
 ): string[][] | null {
   const constraints: string[][] = []
   
-  // 简化角度转换函数：将角度转换为最简分数形式的 pi 表达式
+  // 角度转换函数：将角度转换为 角度/180*pi 的格式
   const convertAngleToPi = (angle: number): string => {
     if (angle === 0) return '0'
-    
-    // 计算最大公约数
-    const gcd = (a: number, b: number): number => {
-      return b === 0 ? a : gcd(b, a % b)
-    }
-    
-    // 约分 angle/180
-    const commonDivisor = gcd(Math.abs(angle), 180)
-    const numerator = angle / commonDivisor
-    const denominator = 180 / commonDivisor
-    
-    if (denominator === 1) {
-      return numerator === 1 ? 'pi' : `${numerator}*pi`
-    } else {
-      return numerator === 1 ? `pi/${denominator}` : `${numerator}*pi/${denominator}`
-    }
+    return `${angle}/180*pi`
   }
   
   // 为每个井构建约束数组
