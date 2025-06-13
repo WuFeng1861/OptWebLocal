@@ -42,11 +42,19 @@ const calculateAutoXRange = () => {
     
     if (targetPoint && doglegPoint) {
       const p2x = parseFloat(targetPoint.x)
-      const radius = doglegPoint.radius
       
-      if (!isNaN(p2x) && !isNaN(radius)) {
-        const minRange = p2x - radius - 1000
-        const maxRange = p2x + radius + 1000
+      // 解析radius字符串，选出最大值
+      let maxRadius = 0
+      if (typeof doglegPoint.radius === 'string') {
+        const radiusValues = doglegPoint.radius.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v))
+        maxRadius = radiusValues.length > 0 ? Math.max(...radiusValues) : 0
+      } else {
+        maxRadius = doglegPoint.radius || 0
+      }
+      
+      if (!isNaN(p2x) && maxRadius > 0) {
+        const minRange = p2x - maxRadius - 1000
+        const maxRange = p2x + maxRadius + 1000
         ranges.push(minRange, maxRange)
       }
     }
@@ -73,14 +81,22 @@ const calculateAutoYRange = () => {
   for (let i = 0; i < targetPoints.value.length; i++) {
     const targetPoint = targetPoints.value[i]
     const doglegPoint = doglegPoints.value[i]
-    console.log(targetPoint, doglegPoint, "calculateAutoYRange");
+    
     if (targetPoint && doglegPoint) {
       const p2y = parseFloat(targetPoint.y)
-      const radius = doglegPoint.radius
       
-      if (!isNaN(p2y) && !isNaN(radius)) {
-        const minRange = p2y - radius - 1000
-        const maxRange = p2y + radius + 1000
+      // 解析radius字符串，选出最大值
+      let maxRadius = 0
+      if (typeof doglegPoint.radius === 'string') {
+        const radiusValues = doglegPoint.radius.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v))
+        maxRadius = radiusValues.length > 0 ? Math.max(...radiusValues) : 0
+      } else {
+        maxRadius = doglegPoint.radius || 0
+      }
+      
+      if (!isNaN(p2y) && maxRadius > 0) {
+        const minRange = p2y - maxRadius - 1000
+        const maxRange = p2y + maxRadius + 1000
         ranges.push(minRange, maxRange)
       }
     }
