@@ -120,7 +120,7 @@ function buildNeconConstraints(
       const { firstCurve, secondCurve } = otherConstraints.maxTurnAngle.unify
       
       if (otherConstraints.maxTurnAngle.unify.firstCurve.enabled && 
-          otherConstraints.maxTurnAngle.unify.firstCurve.angle.trim() !== '') {
+          otherConstraints.maxTurnAngle.unify.firstCurve.angle.toString().trim() !== '') {
         const angle = parseFloat(otherConstraints.maxTurnAngle.unify.firstCurve.angle)
         if (!isNaN(angle)) {
           wellConstraints.push(`-theta1+${convertAngleToPi(angle)}`)
@@ -128,7 +128,7 @@ function buildNeconConstraints(
       }
       
       if (otherConstraints.maxTurnAngle.unify.secondCurve.enabled && 
-          otherConstraints.maxTurnAngle.unify.secondCurve.angle.trim() !== '') {
+          otherConstraints.maxTurnAngle.unify.secondCurve.angle.toString().trim() !== '') {
         const angle = parseFloat(otherConstraints.maxTurnAngle.unify.secondCurve.angle)
         if (!isNaN(angle)) {
           wellConstraints.push(`-theta2+${convertAngleToPi(angle)}`)
