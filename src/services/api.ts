@@ -365,5 +365,5 @@ export async function sendComputeRequest(requestData: any) {
   //   console.error('Error:', error)
   //   throw error
   // }
-  alert(JSON.stringify(requestData));
+  console.log(JSON.stringify(requestData));
 }
