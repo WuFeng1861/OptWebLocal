@@ -123,7 +123,7 @@ const updateRadiusValue = (wellIndex: number, valueIndex: number, newValue: stri
                     :value="parseDoglegValues(point.dogleg)[0]"
                     @input="updateDoglegValue(wellIndex, 0, ($event.target as HTMLInputElement).value)"
                     class="w-full px-1.5 py-1 border rounded text-right"
-                    placeholder="e.g.: 2.0"
+                    placeholder="e.g.: 3.0"
                   >
                 </td>
                 <td>
@@ -141,7 +141,7 @@ const updateRadiusValue = (wellIndex: number, valueIndex: number, newValue: stri
                     :value="parseDoglegValues(point.dogleg)[2]"
                     @input="updateDoglegValue(wellIndex, 2, ($event.target as HTMLInputElement).value)"
                     class="w-full px-1.5 py-1 border rounded text-right"
-                    placeholder="e.g.: 4.0"
+                    placeholder="e.g.: 3.0"
                   >
                 </td>
               </tr>
@@ -180,7 +180,7 @@ const updateRadiusValue = (wellIndex: number, valueIndex: number, newValue: stri
                     :value="parseRadiusValues(point.radius)[1]"
                     @input="updateRadiusValue(wellIndex, 1, ($event.target as HTMLInputElement).value)"
                     class="w-full px-1.5 py-1 border rounded text-right"
-                    placeholder="e.g.: 381.97"
+                    placeholder="e.g.: 572.95"
                   >
                 </td>
                 <td>
@@ -189,7 +189,7 @@ const updateRadiusValue = (wellIndex: number, valueIndex: number, newValue: stri
                     :value="parseRadiusValues(point.radius)[2]"
                     @input="updateRadiusValue(wellIndex, 2, ($event.target as HTMLInputElement).value)"
                     class="w-full px-1.5 py-1 border rounded text-right"
-                    placeholder="e.g.: 286.48"
+                    placeholder="e.g.: 572.95"
                   >
                 </td>
               </tr>
