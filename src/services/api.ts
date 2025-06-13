@@ -143,14 +143,14 @@ function buildNeconConstraints(
       // Specify 模式：每个井使用独立的约束
       const angleConstraint = otherConstraints.maxTurnAngle.specify.angles[wellIndex]
       if (angleConstraint) {
-        if (angleConstraint.firstCurve.trim() !== '') {
+        if (angleConstraint.firstCurve.toString().trim() !== '') {
           const angle = parseFloat(angleConstraint.firstCurve)
           if (!isNaN(angle)) {
             wellConstraints.push(`-theta1+${convertAngleToPi(angle)}`)
           }
         }
         
-        if (angleConstraint.secondCurve.trim() !== '') {
+        if (angleConstraint.secondCurve.toString().trim() !== '') {
           const angle = parseFloat(angleConstraint.secondCurve)
           if (!isNaN(angle)) {
             wellConstraints.push(`-theta2+${convertAngleToPi(angle)}`)
