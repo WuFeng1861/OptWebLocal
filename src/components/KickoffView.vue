@@ -39,7 +39,7 @@ const activeNames = ref(['depth', 'direction'])
                   <input
                     type="number"
                     v-model="point.pkx"
-                    placeholder='[To be optimized]'
+                    placeholder="[To be optimized]"
                     step="0.01"
                     placeholder=""
                   >
@@ -48,7 +48,6 @@ const activeNames = ref(['depth', 'direction'])
                   <input
                     type="number"
                     v-model="point.pky"
-                    placeholder='[To be optimized]'
                     step="0.01"
                     placeholder=""
                   >
