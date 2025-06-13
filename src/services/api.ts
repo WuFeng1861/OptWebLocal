@@ -269,7 +269,7 @@ export function buildRequestData(
         "UNIT": "deg/30m",
         "VALUE": doglegPoints.map(point => {
           // 解析dogleg字符串，支持1-3个数值
-          const values = point.dogleg.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v))
+          const values = point.dogleg.toString().split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v))
           return values.length > 0 ? values : [3] // 默认值为3
         })
       },
@@ -282,7 +282,7 @@ export function buildRequestData(
             // 检查是否包含逗号（数组格式）
             if (point.radius.includes(',')) {
               // 处理数组格式：如 "572.95,381.97,286.48"
-              const values = point.radius.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v))
+              const values = point.radius.toString().split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v))
               return values.length > 0 ? values : [572.95] // 默认值为572.95
             } else {
               // 处理单个数字格式
