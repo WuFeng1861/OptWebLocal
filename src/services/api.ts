@@ -311,7 +311,7 @@ export function buildRequestData(
       "cst_radiusM": {
         "DESCRIPTION": "radius for computing cost contour",
         "UNIT": "m",
-        "VALUE": parseFloat(computeState.ranges.radius.value) || 3000
+        "VALUE": Array(numberOfWells).fill(parseFloat(computeState.ranges.radius.value) || 3000)
       },
       "PKM": {
         "DESCRIPTION": "kickoff point, [East, North, Depth]",
