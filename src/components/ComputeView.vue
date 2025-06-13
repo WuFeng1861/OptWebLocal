@@ -38,6 +38,7 @@ const calculateAutoXRange = () => {
   for (let i = 0; i < targetPoints.value.length; i++) {
     const targetPoint = targetPoints.value[i]
     const doglegPoint = doglegPoints.value[i]
+    console.log(targetPoint, doglegPoint, "calculateAutoXRange");
     
     if (targetPoint && doglegPoint) {
       const p2x = parseFloat(targetPoint.x)
@@ -72,7 +73,7 @@ const calculateAutoYRange = () => {
   for (let i = 0; i < targetPoints.value.length; i++) {
     const targetPoint = targetPoints.value[i]
     const doglegPoint = doglegPoints.value[i]
-    
+    console.log(targetPoint, doglegPoint, "calculateAutoYRange");
     if (targetPoint && doglegPoint) {
       const p2y = parseFloat(targetPoint.y)
       const radius = doglegPoint.radius
