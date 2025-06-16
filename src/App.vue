@@ -429,95 +429,49 @@ const handleOpenFile = async () => {
           }
         }
 
-        // 解析约束信息
-        let hasSpecifyConstraints = false
+        // 初始化specify数组
+        for (let i = 0; i < numberOfWells.value; i++) {
+          otherConstraints.value.maxTurnAngle.specify.angles.push({
+            wellNo: i + 1,
+            firstCurve: '',
+            secondCurve: ''
+          })
+          otherConstraints.value.maxTurnAngle.specify.customFunctions.push({
+            wellNo: i + 1,
+            customFunction: ''
+          })
+          otherConstraints.value.drillSite.specify.push({
+            wellNo: i + 1,
+            formula: ''
+          })
+        }
+
+        // 解析每个井的约束信息
         for (let wellIndex = 0; wellIndex < neconConstraints.length; wellIndex++) {
           const wellConstraints = neconConstraints[wellIndex]
           if (wellConstraints && wellConstraints.length > 0) {
-            // 检查是否有不同的约束，如果有则使用specify模式
-            if (wellIndex > 0) {
-              const firstWellConstraints = neconConstraints[0]
-              if (JSON.stringify(wellConstraints) !== JSON.stringify(firstWellConstraints)) {
-                hasSpecifyConstraints = true
-              }
-            }
-          }
-        }
-
-        // 处理第一口井的约束来设置unify模式的默认值
-        if (neconConstraints.length > 0 && neconConstraints[0] && neconConstraints[0].length > 0) {
-          const firstWellConstraints = neconConstraints[0]
-          
-          for (const constraint of firstWellConstraints) {
-            if (constraint.includes('-theta1+')) {
-              // 第一弯曲角度约束
-              const match = constraint.match(/-theta1\+(\d+(?:\.\d+)?)(\/180\*pi)?/)
-              if (match) {
-                otherConstraints.value.maxTurnAngle.unify.firstCurve.enabled = true
-                otherConstraints.value.maxTurnAngle.unify.firstCurve.angle = match[1]
-              }
-            } else if (constraint.includes('-theta2+')) {
-              // 第二弯曲角度约束
-              const match = constraint.match(/-theta2\+(\d+(?:\.\d+)?)(\/180\*pi)?/)
-              if (match) {
-                otherConstraints.value.maxTurnAngle.unify.secondCurve.enabled = true
-                otherConstraints.value.maxTurnAngle.unify.secondCurve.angle = match[1]
-              }
-            } else if (constraint.includes('theta1') || constraint.includes('theta2')) {
-              // 自定义函数约束
-              otherConstraints.value.maxTurnAngle.unify.customFunction.enabled = true
-              otherConstraints.value.maxTurnAngle.unify.customFunction.formula = constraint.trim()
-            } else if (constraint.includes('X') || constraint.includes('Y')) {
-              // 钻井位置约束
-              otherConstraints.value.drillSite.unify.enabled = true
-              otherConstraints.value.drillSite.unify.formula = constraint.trim()
-            }
-          }
-        }
-
-        // 如果有specify约束，则设置specify模式
-        if (hasSpecifyConstraints) {
-          // 设置为specify模式并填充数据
-          otherConstraints.value.maxTurnAngle.mode = 'specify'
-          otherConstraints.value.drillSite.mode = 'specify'
-          
-          // 初始化specify数组
-          for (let i = 0; i < numberOfWells.value; i++) {
-            otherConstraints.value.maxTurnAngle.specify.angles.push({
-              wellNo: i + 1,
-              firstCurve: '',
-              secondCurve: ''
-            })
-            otherConstraints.value.maxTurnAngle.specify.customFunctions.push({
-              wellNo: i + 1,
-              customFunction: ''
-            })
-            otherConstraints.value.drillSite.specify.push({
-              wellNo: i + 1,
-              formula: ''
-            })
-          }
-
-          // 填充具体的约束数据
-          for (let wellIndex = 0; wellIndex < neconConstraints.length; wellIndex++) {
-            const wellConstraints = neconConstraints[wellIndex]
-            if (wellConstraints && wellConstraints.length > 0) {
-              for (const constraint of wellConstraints) {
-                if (constraint.includes('-theta1+')) {
-                  const match = constraint.match(/-theta1\+(\d+(?:\.\d+)?)(\/180\*pi)?/)
-                  if (match) {
-                    otherConstraints.value.maxTurnAngle.specify.angles[wellIndex].firstCurve = match[1]
-                  }
-                } else if (constraint.includes('-theta2+')) {
-                  const match = constraint.match(/-theta2\+(\d+(?:\.\d+)?)(\/180\*pi)?/)
-                  if (match) {
-                    otherConstraints.value.maxTurnAngle.specify.angles[wellIndex].secondCurve = match[1]
-                  }
-                } else if (constraint.includes('theta1') || constraint.includes('theta2')) {
-                  otherConstraints.value.maxTurnAngle.specify.customFunctions[wellIndex].customFunction = constraint.trim()
-                } else if (constraint.includes('X') || constraint.includes('Y')) {
-                  otherConstraints.value.drillSite.specify[wellIndex].formula = constraint.trim()
+            for (const constraint of wellConstraints) {
+              const constraintStr = constraint.trim()
+              
+              // 判断约束类型并分类处理
+              if (constraintStr.includes('X') || constraintStr.includes('Y')) {
+                // Drill Site Location 约束
+                otherConstraints.value.drillSite.specify[wellIndex].formula = constraintStr
+              } else if (constraintStr.includes('-theta1+') && !constraintStr.includes('-theta2+')) {
+                // 只包含 -theta1 的约束 → 1st curve
+                const match = constraintStr.match(/-theta1\+(\d+(?:\.\d+)?)(\/180\*pi)?/)
+                if (match) {
+                  otherConstraints.value.maxTurnAngle.specify.angles[wellIndex].firstCurve = match[1]
                 }
+              } else if (constraintStr.includes('-theta2+') && !constraintStr.includes('-theta1+')) {
+                // 只包含 -theta2 的约束 → 2nd curve
+                const match = constraintStr.match(/-theta2\+(\d+(?:\.\d+)?)(\/180\*pi)?/)
+                if (match) {
+                  otherConstraints.value.maxTurnAngle.specify.angles[wellIndex].secondCurve = match[1]
+                }
+              } else if (constraintStr.includes('theta1') || constraintStr.includes('theta2')) {
+                // 包含两个角度或非负数theta的约束 → Custom Function
+                otherConstraints.value.maxTurnAngle.specify.customFunctions[wellIndex].customFunction = constraintStr
               }
             }
           }
