@@ -406,12 +406,12 @@ const handleOpenFile = async () => {
         // 重置约束状态
         otherConstraints.value = {
           drillSite: {
-            mode: 'unify',
+            mode: 'specify',
             unify: { enabled: false, formula: '' },
             specify: []
           },
           maxTurnAngle: {
-            mode: 'unify',
+            mode: 'specify',
             unify: {
               firstCurve: { enabled: false, angle: '' },
               secondCurve: { enabled: false, angle: '' },
@@ -423,7 +423,7 @@ const handleOpenFile = async () => {
             }
           },
           layers: {
-            mode: 'unify',
+            mode: 'specify',
             unify: { numberOfSurfaces: 0 },
             specify: []
           }
