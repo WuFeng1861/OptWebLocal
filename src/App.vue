@@ -354,9 +354,7 @@ const handleOpenFile = async () => {
       // 更新 computeState
       computeState.value = {
         ...computeState.value,
-        problemType: fieldOptBlock.cluster_min && fieldOptBlock.cluster_max ? 
-          (fieldOptBlock.cluster_min.VALUE === fieldOptBlock.cluster_max.VALUE && fieldOptBlock.cluster_min.VALUE === 1 ? 
-            '1-Site-N-Wells' : 'K-Sites-N-Wells') : '1-Site-N-Wells',
+        problemType: '1-Site-N-Wells',
         cluster_min: fieldOptBlock.cluster_min.VALUE,
         cluster_max: fieldOptBlock.cluster_max.VALUE,
         sitePreparationCost: fieldOptBlock.cst_Site.VALUE,
