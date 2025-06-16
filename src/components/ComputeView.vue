@@ -427,7 +427,7 @@ watch(() => computeState.value.clusterSizes.length, (newLength) => {
       <!-- Optimal Layout -->
       <el-collapse-item
         v-if="computeState.problemType === 'K-Sites-N-Wells'"
-        title="Optimal Layout(K-Sites-N-Wells)"
+        title="Optimal Layout (K-Sites-N-Wells)"
         name="optimal-layout"
       >
         <div class="p-4 space-y-3">
@@ -461,7 +461,7 @@ watch(() => computeState.value.clusterSizes.length, (newLength) => {
       <!-- Optimal Site -->
       <el-collapse-item
         v-if="computeState.problemType === '1-Site-N-Wells'"
-        title="Optimal Site(1-Site-N-Wells)"
+        title="Optimal Site (1-Site-N-Wells)"
         name="optimal-site"
       >
         <div class="p-4 space-y-3">
