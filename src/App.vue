@@ -371,7 +371,7 @@ const handleOpenFile = async () => {
             { size: 2.00, cost: 30.00 },
             { size: 3.00, cost: 50.00 },
             { size: 4.00, cost: 50.00 }
-          ],
+          ].reverse(),
         ranges: {
           x: {
             mode: Array.isArray(fieldOptBlock.XRange.VALUE) ? 'Manual' : 'Auto',
