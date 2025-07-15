@@ -1,25 +1,25 @@
 <script setup lang="ts">
 import { ref, provide, readonly, watch } from 'vue'
-import type { 
-  Point, 
-  CustomFunction, 
-  KickoffPoint, 
-  KickoffDirection, 
-  DoglegPoint, 
-  Surface, 
-  ComputeState, 
-  OtherConstraintsState 
+import type {
+  Point,
+  CustomFunction,
+  KickoffPoint,
+  KickoffDirection,
+  DoglegPoint,
+  Surface,
+  ComputeState,
+  OtherConstraintsState
 } from './types'
 import ConfigurationPanel from './components/ConfigurationPanel.vue'
 import OilfieldLayoutTree from './components/OilfieldLayoutTree.vue'
-// import VisualizationPanel from './components/VisualizationPanel.vue'
-
+import VisualizationPanel from './components/VisualizationPanel.vue'
+import {useKickoffListen} from './composables/useKickoffListen';
 
 const activeTab = ref('completion-intervals')
 const numberOfWells = ref(1)
 const targetPoints = ref<Point[]>([{ x: '', y: '', z: '' }])
 const entryDirections = ref<Point[]>([{ x: '', y: '', z: '' }])
-const wellNames = ref<string[]>(['Well No1'])
+const wellNames = ref<string[]>([])
 
 // 选中的井编号数组
 const selectedWells = ref<number[]>([])
@@ -227,6 +227,7 @@ provide('surfaces', surfaces)
 provide('activeSurfaceIndex', activeSurfaceIndex)
 provide('computeState', computeState)
 provide('selectedWells', selectedWells)
+provide('isWellSelected', (wellIndex: number) => selectedWells.value.includes(wellIndex))
 provide('updateSelectedWells', (wells: number[]) => {
   console.log(wells);
   selectedWells.value = wells
@@ -266,7 +267,7 @@ const handleOpenFile = async () => {
         })
       }
       wellNames.value === wellNamesTemp;
-      
+
       // 更新 targetPoints
       targetPoints.value = fieldOptBlock.PCM.VALUE.map((point: number[]) => ({
         x: point[0].toString(),
@@ -284,7 +285,7 @@ const handleOpenFile = async () => {
       // 更新 kickoffPoints - 从PKM获取完整的kickoff点信息
       kickoffPoints.value = fieldOptBlock.PKM.VALUE.map((point: (number | null)[]) => ({
         pkx: point[0],
-        pky: point[1], 
+        pky: point[1],
         pkz: point[2]
       }))
 
@@ -312,7 +313,7 @@ const handleOpenFile = async () => {
         cluster_max: fieldOptBlock.cluster_max.VALUE,
         sitePreparationCost: fieldOptBlock.cst_Site.VALUE,
         numberOfClusterSizes: fieldOptBlock.slot ? fieldOptBlock.slot.VALUE.length : 4,
-        clusterSizes: fieldOptBlock.slot && fieldOptBlock.cst_WH ? 
+        clusterSizes: fieldOptBlock.slot && fieldOptBlock.cst_WH ?
           fieldOptBlock.slot.VALUE.map((size: number, index: number) => ({
             size,
             cost: fieldOptBlock.cst_WH.VALUE[index]
@@ -326,26 +327,26 @@ const handleOpenFile = async () => {
         ranges: {
           x: {
             mode: Array.isArray(fieldOptBlock.XRange.VALUE) ? 'Manual' : 'Auto',
-            value: Array.isArray(fieldOptBlock.XRange.VALUE) ? 
-              JSON.stringify(fieldOptBlock.XRange.VALUE) : 
+            value: Array.isArray(fieldOptBlock.XRange.VALUE) ?
+              JSON.stringify(fieldOptBlock.XRange.VALUE) :
               (fieldOptBlock.XRange.VALUE === 'Auto' ? '' : fieldOptBlock.XRange.VALUE.toString())
           },
           y: {
             mode: Array.isArray(fieldOptBlock.YRange.VALUE) ? 'Manual' : 'Auto',
-            value: Array.isArray(fieldOptBlock.YRange.VALUE) ? 
-              JSON.stringify(fieldOptBlock.YRange.VALUE) : 
+            value: Array.isArray(fieldOptBlock.YRange.VALUE) ?
+              JSON.stringify(fieldOptBlock.YRange.VALUE) :
               (fieldOptBlock.YRange.VALUE === 'Auto' ? '' : fieldOptBlock.YRange.VALUE.toString())
           },
           radius: {
-            mode: fieldOptBlock.cst_radiusM && Array.isArray(fieldOptBlock.cst_radiusM.VALUE) && 
+            mode: fieldOptBlock.cst_radiusM && Array.isArray(fieldOptBlock.cst_radiusM.VALUE) &&
                   fieldOptBlock.cst_radiusM.VALUE.length > 0 ? 'Manual' : 'Auto',
-            value: fieldOptBlock.cst_radiusM && Array.isArray(fieldOptBlock.cst_radiusM.VALUE) && 
-                   fieldOptBlock.cst_radiusM.VALUE.length > 0 ? 
+            value: fieldOptBlock.cst_radiusM && Array.isArray(fieldOptBlock.cst_radiusM.VALUE) &&
+                   fieldOptBlock.cst_radiusM.VALUE.length > 0 ?
                    fieldOptBlock.cst_radiusM.VALUE[0].toString() : '3000'
           },
           resolution: {
             mode: typeof fieldOptBlock.resolution.VALUE === 'number' ? 'Manual' : 'Auto',
-            value: typeof fieldOptBlock.resolution.VALUE === 'number' ? 
+            value: typeof fieldOptBlock.resolution.VALUE === 'number' ?
                    fieldOptBlock.resolution.VALUE.toString() : '200'
           },
           initialGuess: { mode: 'Auto', value: '[0, 0]' }
@@ -355,7 +356,7 @@ const handleOpenFile = async () => {
       // 更新 otherConstraints - 从necon字段恢复约束信息
       if (fieldOptBlock.necon && fieldOptBlock.necon.VALUE) {
         const neconConstraints = fieldOptBlock.necon.VALUE
-        
+
         // 重置约束状态
         otherConstraints.value = {
           drillSite: {
@@ -405,7 +406,7 @@ const handleOpenFile = async () => {
           if (wellConstraints && wellConstraints.length > 0) {
             for (const constraint of wellConstraints) {
               const constraintStr = constraint.trim()
-              
+
               // 判断约束类型并分类处理
               if (constraintStr.includes('X') || constraintStr.includes('Y')) {
                 // Drill Site Location 约束
@@ -435,6 +436,9 @@ const handleOpenFile = async () => {
     console.error('Error reading file:', error)
   }
 }
+
+// 在最后开启一些监听事件
+useKickoffListen(kickoffPoints);
 </script>
 
 <template>
@@ -450,15 +454,15 @@ const handleOpenFile = async () => {
     </div>
 
     <div class="flex-1 grid grid-cols-[250px,400px,1fr]">
-            
+
       <!-- Oilfield Layout Tree - 新增的左侧树形组件 -->
       <OilfieldLayoutTree />
-      
+
       <!-- Left Panel -->
       <ConfigurationPanel :number-of-wells="numberOfWells" />
 
       <!--&lt;!&ndash; Right Panel &ndash;&gt;-->
-      <!--<VisualizationPanel />-->
+      <VisualizationPanel />
     </div>
   </div>
 </template>

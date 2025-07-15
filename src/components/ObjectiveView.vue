@@ -8,6 +8,7 @@ const customFunctions = inject<Ref<Array<{ formula: string }>>>('customFunctions
 
 const numberOfWells = inject<Readonly<Ref<number>>>('numberOfWells')!
 const selectedWells = inject<Ref<number[]>>('selectedWells', ref([]))
+const isWellSelected = inject<(wellIndex: number) => boolean>('isWellSelected', (wellIndex: number) => false)
 
 const objectives = [
   'Minimum Length',
@@ -16,12 +17,6 @@ const objectives = [
 
 const isCustomObjective = computed(() => selectedObjective.value === 'Custom Function')
 const showTable = computed(() => isCustomObjective.value && objectiveType.value === 'specify')
-
-// 检查井是否被选中
-const isWellSelected = (wellIndex: number): boolean => {
-  const wellNumber = wellIndex + 1
-  return selectedWells.value.includes(wellNumber)
-}
 
 // 注入Select Wells启用状态
 const selectWellsEnabled = inject<Ref<boolean>>('selectWellsEnabled', ref(false))
@@ -88,7 +83,7 @@ const selectWellsEnabled = inject<Ref<boolean>>('selectWellsEnabled', ref(false)
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(func, index) in customFunctions" :key="index" class="border-b last:border-b-0" :class="{ 
+            <tr v-for="(func, index) in customFunctions" :key="index" class="border-b last:border-b-0" :class="{
                 'selected-well-row': isWellSelected(index) && !selectWellsEnabled,
                 'selected-well-row-orange': isWellSelected(index) && selectWellsEnabled
               }">

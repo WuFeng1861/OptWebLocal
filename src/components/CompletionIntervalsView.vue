@@ -6,6 +6,7 @@ const targetPoints = inject<Ref<Array<{x: string, y: string, z: string}>>>('targ
 const entryDirections = inject<Ref<Array<{x: string, y: string, z: string}>>>('entryDirections')!
 const updateNumberOfWells = inject<(value: number) => void>('updateNumberOfWells')!
 const selectedWells = inject<Ref<number[]>>('selectedWells', ref([]))
+const isWellSelected = inject<(wellIndex: number) => boolean>('isWellSelected', (wellIndex: number) => false)
 
 // 控制折叠面板的展开状态，默认全部展开
 const activeNames = ref(['wells', 'target', 'entry'])
@@ -17,12 +18,6 @@ const tempWellsCount = ref(numberOfWells.value.toString())
 watch(numberOfWells, (newValue) => {
   tempWellsCount.value = newValue.toString()
 })
-// 格式化为两位小数的函数
-// 检查井是否被选中
-const isWellSelected = (wellIndex: number): boolean => {
-  const wellNumber = wellIndex + 1
-  return selectedWells.value.includes(wellNumber)
-}
 
 // 注入Select Wells启用状态
 const selectWellsEnabled = inject<Ref<boolean>>('selectWellsEnabled', ref(false))
@@ -93,10 +88,10 @@ const handleWellsKeydown = (e: KeyboardEvent) => {
             </tr>
             </thead>
             <tbody>
-            <tr 
-              v-for="(point, index) in targetPoints" 
+            <tr
+              v-for="(point, index) in targetPoints"
               :key="index"
-              :class="{ 
+              :class="{
                 'selected-well-row': isWellSelected(index) && !selectWellsEnabled,
                 'selected-well-row-orange': isWellSelected(index) && selectWellsEnabled
               }"
@@ -144,10 +139,10 @@ const handleWellsKeydown = (e: KeyboardEvent) => {
             </tr>
             </thead>
             <tbody>
-            <tr 
-              v-for="(direction, index) in entryDirections" 
+            <tr
+              v-for="(direction, index) in entryDirections"
               :key="index"
-              :class="{ 
+              :class="{
                 'selected-well-row': isWellSelected(index) && !selectWellsEnabled,
                 'selected-well-row-orange': isWellSelected(index) && selectWellsEnabled
               }"

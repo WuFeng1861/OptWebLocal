@@ -8,7 +8,7 @@ const doglegPoints = inject<Ref<Array<{
   radius: string;
 }>>>('doglegPoints')!
 const selectedWells = inject<Ref<number[]>>('selectedWells', ref([]))
-
+const isWellSelected = inject<(wellIndex: number) => boolean>('isWellSelected', (wellIndex: number) => false)
 // 使用 composable
 const {
   parseDoglegValues,
@@ -16,12 +16,6 @@ const {
   updateDoglegValue,
   updateRadiusValue
 } = useDoglegCalculation()
-
-// 检查井是否被选中
-const isWellSelected = (wellIndex: number): boolean => {
-  const wellNumber = wellIndex + 1
-  return selectedWells.value.includes(wellNumber)
-}
 
 // 注入Select Wells启用状态
 const selectWellsEnabled = inject<Ref<boolean>>('selectWellsEnabled', ref(false))
@@ -49,7 +43,7 @@ const activeNames = ref(['dogleg', 'radius'])
             </thead>
             <tbody>
               <tr v-for="(point, wellIndex) in doglegPoints" :key="wellIndex"
-                  :class="{ 
+                  :class="{
                     'selected-well-row': isWellSelected(wellIndex) && !selectWellsEnabled,
                     'selected-well-row-orange': isWellSelected(wellIndex) && selectWellsEnabled
                   }">
@@ -101,7 +95,7 @@ const activeNames = ref(['dogleg', 'radius'])
             </thead>
             <tbody>
               <tr v-for="(point, wellIndex) in doglegPoints" :key="wellIndex"
-                  :class="{ 
+                  :class="{
                     'selected-well-row': isWellSelected(wellIndex) && !selectWellsEnabled,
                     'selected-well-row-orange': isWellSelected(wellIndex) && selectWellsEnabled
                   }">

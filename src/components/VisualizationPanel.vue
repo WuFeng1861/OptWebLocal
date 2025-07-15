@@ -94,18 +94,6 @@ function initGrid3dData() {
     };
   });
 
-  // let seriesDataDot = getGenerateLineData.points.map(function (item) {
-  //   return {
-  //     type: 'scatter3D',
-  //     data: [item],
-  //     symbolSize: dotWidth,
-  //     itemStyle: {
-  //       color: '#000',
-  //     },
-  //     animation: false
-  //   };
-  // });
-
 
   // 更新图表数据
   chart.setOption({

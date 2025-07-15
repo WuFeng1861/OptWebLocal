@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, inject } from 'vue'
+import { ref, inject, Ref } from 'vue'
 
 const numberOfWells = inject<Readonly<Ref<number>>>('numberOfWells')!
 const kickoffPoints = inject<Ref<Array<{
@@ -14,15 +14,9 @@ const kickoffDirections = inject<Ref<Array<{
 }>>>('kickoffDirections')!
 
 const selectedWells = inject<Ref<number[]>>('selectedWells', ref([]))
-
+const isWellSelected = inject<(wellIndex: number) => boolean>('isWellSelected', (wellIndex: number) => false)
 // 控制折叠面板的展开状态，默认全部展开
 const activeNames = ref(['depth', 'direction'])
-
-// 检查井是否被选中
-const isWellSelected = (wellIndex: number): boolean => {
-  const wellNumber = wellIndex + 1
-  return selectedWells.value.includes(wellNumber)
-}
 
 // 注入Select Wells启用状态
 const selectWellsEnabled = inject<Ref<boolean>>('selectWellsEnabled', ref(false))
@@ -44,8 +38,8 @@ const selectWellsEnabled = inject<Ref<boolean>>('selectWellsEnabled', ref(false)
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(point, index) in kickoffPoints" :key="index" 
-                  :class="{ 
+              <tr v-for="(point, index) in kickoffPoints" :key="index"
+                  :class="{
                 'selected-well-row': isWellSelected(index) && !selectWellsEnabled,
                 'selected-well-row-orange': isWellSelected(index) && selectWellsEnabled
               }">
@@ -95,8 +89,8 @@ const selectWellsEnabled = inject<Ref<boolean>>('selectWellsEnabled', ref(false)
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(direction, index) in kickoffDirections" :key="index" 
-                  :class="{ 
+              <tr v-for="(direction, index) in kickoffDirections" :key="index"
+                  :class="{
                 'selected-well-row': isWellSelected(index) && !selectWellsEnabled,
                 'selected-well-row-orange': isWellSelected(index) && selectWellsEnabled
               }">

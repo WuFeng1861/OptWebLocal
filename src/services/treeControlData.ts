@@ -3,15 +3,15 @@ import {
   changeAllContourShow,
   changeAllCurvesShow,
   changeAllDataShow,
-  changeContourShow,
+  changeWellContourShow,
   changeCurvesShow,
-  changeSiteContourShow,
+  changeSiteWellContourShow,
   changeSiteCurvesShow,
   changeSiteShow,
   changeWellShow,
   getContourIndexListRef,
   getCurvesIndexListRef,
-  getSiteData
+  getSiteData, changeSiteContourShow, changeAllWellContourShow, changeAllSiteContourShow
 } from './dataTemp';
 import {ref, Ref} from 'vue';
 
@@ -53,65 +53,68 @@ const getSiteCostContourCheckedStatus = (index: number) => {
   return siteWell.some(i => ContourIndexListRef.value[i]);
 };
 
-const getComponentTrajectorySiteViewData = (index: number) => {
+const getComponentTrajectoryAllWellViewData = () => {
   let result = [];
-  let wellList = SiteData[index];
-  for (let i = 0; i < wellList.length; i++) {
-    let key = wellList[i];
+  let wellKeys = Object.keys(CurvesIndexListRef.value).sort((a, b) => a - b);
+  for (let i = 0; i < wellKeys.length; i++) {
+    let key = Number(wellKeys[i]);
     allIds.push(`TrajectoryWell-${key}`);
     result.push({
       id: `TrajectoryWell-${key}`,
       label: `Well ${key + 1}`,
-      // checked: CurvesIndexListRef.value[key],
+      // checked: getSiteTrajectoryCheckedStatus(key),
       children: []
     });
   }
   return result;
 };
-const getComponentCostContourSiteViewData = (index: number) => {
+const getComponentCostContourAllWellViewData = () => {
   let result = [];
-  let wellList = SiteData[index];
-  for (let i = 0; i < wellList.length; i++) {
-    let key = wellList[i];
+  // 从小到大 按照数字排序
+  let wellKeys = Object.keys(ContourIndexListRef.value).sort( (a, b) => a - b);
+  for (let i = 0; i < wellKeys.length; i++) {
+    let key = Number(wellKeys[i]);
     allIds.push(`CostContourWell-${key}`);
     result.push({
       id: `CostContourWell-${key}`,
       label: `Well ${key + 1}`,
-      checked: ContourIndexListRef.value[key],
+      // checked: getSiteCostContourCheckedStatus(key),
       children: []
-    });
-  }
-  return result;
-};
-const getComponentTrajectoryAllSiteViewData = () => {
-  let result = [];
-  console.log(SiteData, 'getComponentTrajectoryAllSiteViewData');
-  for (let i = 0; i < SiteData.length; i++) {
-    let key = i;
-    allIds.push(`TrajectorySite-${key}`);
-    result.push({
-      id: `TrajectorySite-${key}`,
-      label: `Site ${key + 1}`,
-      // checked: getSiteTrajectoryCheckedStatus(key),
-      children: getComponentTrajectorySiteViewData(key)
     });
   }
   return result;
 };
 const getComponentCostContourAllSiteViewData = () => {
   let result = [];
+  // 从小到大 按照数字排序
   for (let i = 0; i < SiteData.length; i++) {
     let key = i;
-    allIds.push(`CostContourSite-${key}`);
+    allIds.push(`SiteCostContour-${key}`);
     result.push({
-      id: `CostContourSite-${key}`,
+      id: `SiteCostContour-${key}`,
       label: `Site ${key + 1}`,
       // checked: getSiteCostContourCheckedStatus(key),
-      children: getComponentCostContourSiteViewData(key)
+      children: []
     });
   }
   return result;
 };
+const getComponentCostContourAllSiteTypeViewData = () => {
+  let result = [];
+  result.push(
+    {
+      id: 'CostContourWell-all',
+      label: 'SatelliteContour',
+      children: getComponentCostContourAllWellViewData()
+    },
+    {
+      id: 'SiteCostContour-all',
+      label: 'SiteContour',
+      children: getComponentCostContourAllSiteViewData()
+    }
+  );
+  return result;
+}
 
 export const initComponentViewData = (checked: boolean = true) => {
   allIds.push('Components-all');
@@ -126,13 +129,13 @@ export const initComponentViewData = (checked: boolean = true) => {
         id: 'Trajectory-all',
         label: 'Trajectory',
         // checked: getTrajectoryAllCheckedStatus(),
-        children: getComponentTrajectoryAllSiteViewData()
+        children: getComponentTrajectoryAllWellViewData()
       },
       {
         id: 'CostContour-all',
         label: 'Cost Contour',
         // checked: getCostContourAllCheckedStatus(),
-        children: getComponentCostContourAllSiteViewData()
+        children: getComponentCostContourAllSiteTypeViewData()
       }
     ]
   };
@@ -160,14 +163,14 @@ const getLayoutWellViewData = (index: number) => {
 const getLayoutSiteViewData = (index: number) => {
   let result = [];
   let wellList = SiteData[index];
-  // allIds.push(`CostContourSite-${index}`);
-  // result.push(
-  //   {
-  //     id: `CostContourSite-${index}`,
-  //     label: `Site ${index + 1} Cost Contour`,
-  //     children: []
-  //   }
-  // );
+  allIds.push(`SiteCostContour-${index}`);
+  result.push(
+    {
+      id: `SiteCostContour-${index}`,
+      label: `Site ${index + 1} Cost Contour`,
+      children: []
+    }
+  );
   for (let i = 0; i < wellList.length; i++) {
     let key = wellList[i];
     allIds.push(`WellAll-${key}`);
@@ -227,12 +230,12 @@ export const resolveTreeClicked = (id: string, checked: boolean) => {
     changeAllContourShow(!checked);
     return;
   }
-  if (nodeType === 'CostContourSite' && index !== 'all') {
-    changeSiteContourShow(parseInt(index), !checked);
+  if (nodeType === 'CostContourWell' && index !== 'all') {
+    changeWellContourShow(parseInt(index), !checked);
     return;
   }
-  if (nodeType === 'CostContourWell' && index !== 'all') {
-    changeContourShow(parseInt(index), !checked);
+  if (nodeType === 'CostContourWell' && index === 'all') {
+    changeAllWellContourShow(!checked);
     return;
   }
   if (nodeType === 'Site') {
@@ -241,6 +244,14 @@ export const resolveTreeClicked = (id: string, checked: boolean) => {
   }
   if (nodeType === 'WellAll') {
     changeWellShow(parseInt(index), !checked)
+    return;
+  }
+  if (nodeType === 'SiteCostContour' && index !== 'all') {
+    changeSiteContourShow(parseInt(index), !checked)
+    return;
+  }
+  if (nodeType === 'SiteCostContour' && index === 'all') {
+    changeAllSiteContourShow(!checked)
     return;
   }
 };

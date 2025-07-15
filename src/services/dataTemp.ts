@@ -1,4 +1,5 @@
 import {ref} from 'vue';
+import {eventBus} from '../utils';
 import {CostContourData, CurvesData} from '../utils/calcData';
 import {ContourData1} from './testData/ContourData-1';
 import {ContourData2} from './testData/ContourData-2';
@@ -60,9 +61,23 @@ import {lineData27} from './testData/lineData-27';
 import {lineData28} from './testData/lineData-28';
 import {lineData29} from './testData/lineData-29';
 import {lineData30} from './testData/lineData-30';
+import {SiteContourData1} from './testData/SiteContourData-1';
+import {SiteContourData2} from './testData/SiteContourData-2';
+import {SiteContourData3} from './testData/SiteContourData-3';
+import {SiteContourData4} from './testData/SiteContourData-4';
+import {SiteContourData5} from './testData/SiteContourData-5';
+import {SiteContourData6} from './testData/SiteContourData-6';
+import {SiteContourData7} from './testData/SiteContourData-7';
+import {SiteContourData8} from './testData/SiteContourData-8';
+import {SiteContourData9} from './testData/SiteContourData-9';
+import {SiteContourData10} from './testData/SiteContourData-10';
+import {SiteContourData11} from './testData/SiteContourData-11';
+import {SiteContourData12} from './testData/SiteContourData-12';
+import {SiteContourData13} from './testData/SiteContourData-13';
+import {SiteContourData14} from './testData/SiteContourData-14';
 
 let wellNum = 30;
-let siteNum = 0;
+let siteNum = 14;
 let SiteData: number[][] = [];
 
 const ContourDataObj: { [key: string]: CostContourData } = {
@@ -129,14 +144,34 @@ const CurvesDataObj: { [key: string]: CurvesData } = {
   '28': lineData29,
   '29': lineData30
 };
+const SiteContourDataObj: { [key: string]: CostContourData } = {
+  '0': SiteContourData1,
+  '1': SiteContourData2,
+  '2': SiteContourData3,
+  '3': SiteContourData4,
+  '4': SiteContourData5,
+  '5': SiteContourData6,
+  '6': SiteContourData7,
+  '7': SiteContourData8,
+  '8': SiteContourData9,
+  '9': SiteContourData10,
+  '10': SiteContourData11,
+  '11': SiteContourData12,
+  '12': SiteContourData13,
+  '13': SiteContourData14
+};
 
 const ContourIndexListRef = ref<{ [key: number]: boolean }>({});
 const CurvesIndexListRef = ref<{ [key: number]: boolean }>({});
+const SiteContourIndexListRef = ref<{ [key: number]: boolean }>({});
 
 
 for (let i = 0; i < 30; i++) {
   ContourIndexListRef.value[i] = true;
   CurvesIndexListRef.value[i] = true;
+}
+for (let i = 0; i < 14; i++) {
+  SiteContourIndexListRef.value[i] = true;
 }
 
 export const getWellNum = () => {
@@ -155,6 +190,14 @@ export const getContourShowData = () => {
     let key = keys[i];
     if (ContourIndexListRef.value[key]) {
       result.push(ContourDataObj[key]);
+    }
+  }
+  let siteKeys = Object.keys(SiteContourIndexListRef.value);
+  for (let i = 0; i < siteKeys.length; i++) {
+    let key = siteKeys[i];
+    console.log(key, SiteContourIndexListRef.value[key], 'getSiteContourDataObj[key]');
+    if (SiteContourIndexListRef.value[key]) {
+      result.push(SiteContourDataObj[key]);
     }
   }
   return result;
@@ -204,10 +247,46 @@ export const getSiteData = () => {
   }
   SiteData = result;
   siteNum = result.length;
+  console.log(result, 'initSiteData');
   return result;
 };
 
-export const changeContourShow = (index: number, isDelete: boolean) => {
+export const getSiteKickOffData = (siteId: number) => {
+  const key = Number(siteId) - 1;
+  let curvesData = CurvesDataObj[key];
+  let pkx = Number(curvesData['CURVES']['EAST'][0]);
+  let pky = Number(curvesData['CURVES']['NORTH'][0]);
+  let pkz = Number(curvesData['CURVES']['TVD'][0]);
+  return {
+    pkx,
+    pky,
+    pkz
+  };
+};
+
+// TODO : isAllData 用来控制是否反转控制最左侧well树图
+export const updateSiteData = (newSiteData, isAllData: boolean = true) => {
+  SiteData = newSiteData;
+  siteNum = newSiteData.length;
+  if (isAllData) eventBus.emit('updateSiteData', newSiteData);
+};
+
+// TODO : isAllData 用来控制是否反转控制最左侧well树图
+export const updateCurvesData = (index: number, value: CurvesData, isAllData: boolean = true) => {
+  CurvesDataObj[index] = value;
+  if (isAllData) eventBus.emit('updateCurvesData', {
+    index,
+    pkx: Number(value['CURVES']['EAST'][0]),
+    pky: Number(value['CURVES']['NORTH'][0]),
+    pkz: Number(value['CURVES']['TVD'][0]),
+  });
+};
+
+export const updateContourData = (index: number, value: CostContourData, isAllData: boolean = true) => {
+  ContourDataObj[index] = value;
+}
+
+export const changeWellContourShow = (index: number, isDelete: boolean) => {
   ContourIndexListRef.value[index] = !isDelete;
 };
 
@@ -215,17 +294,19 @@ export const changeCurvesShow = (index: number, isDelete: boolean) => {
   CurvesIndexListRef.value[index] = !isDelete;
 };
 
+export const changeSiteContourShow = (index: number, isDelete: boolean) => {
+  SiteContourIndexListRef.value[index] = !isDelete;
+};
+
 export const changeWellShow = (index: number, isDelete: boolean) => {
-  changeContourShow(index, isDelete);
+  changeWellContourShow(index, isDelete);
   changeCurvesShow(index, isDelete);
 };
 
 export const changeAllDataShow = (isDelete: boolean) => {
-  for (let i = 0; i < wellNum; i++) {
-    changeContourShow(i, isDelete);
-    changeCurvesShow(i, isDelete);
-  }
-}
+  changeAllContourShow(isDelete);
+  changeAllCurvesShow(isDelete);
+};
 
 export const changeAllCurvesShow = (isDelete: boolean) => {
   for (let i = 0; i < wellNum; i++) {
@@ -235,14 +316,27 @@ export const changeAllCurvesShow = (isDelete: boolean) => {
 
 export const changeAllContourShow = (isDelete: boolean) => {
   for (let i = 0; i < wellNum; i++) {
-    changeContourShow(i, isDelete);
+    changeWellContourShow(i, isDelete);
+  }
+  changeAllSiteContourShow(isDelete);
+};
+
+export const changeAllWellContourShow = (isDelete: boolean) => {
+  for (let i = 0; i < wellNum; i++) {
+    changeWellContourShow(i, isDelete);
   }
 };
 
-export const changeSiteContourShow = (index: number, isDelete: boolean) => {
+export const changeAllSiteContourShow = (isDelete: boolean) => {
+  for (let i = 0; i < siteNum; i++) {
+    changeSiteContourShow(i, isDelete);
+  }
+};
+
+export const changeSiteWellContourShow = (index: number, isDelete: boolean) => {
   let siteIndex = SiteData[index];
   for (let i = 0; i < siteIndex.length; i++) {
-    changeContourShow(siteIndex[i], isDelete);
+    changeWellContourShow(siteIndex[i], isDelete);
   }
 };
 
@@ -254,11 +348,24 @@ export const changeSiteCurvesShow = (index: number, isDelete: boolean) => {
 };
 
 export const changeSiteShow = (index: number, isDelete: boolean) => {
-  changeSiteContourShow(index, isDelete);
+  changeSiteWellContourShow(index, isDelete);
   changeSiteCurvesShow(index, isDelete);
+  changeSiteContourShow(index, isDelete);
 };
 
 
 // init all data 初始化所有数据
-getSiteData()
+setTimeout(() => {
+  for (const curvesDataObjKey in CurvesDataObj)  {
+    let value = CurvesDataObj[curvesDataObjKey];
+    updateCurvesData(Number(curvesDataObjKey), value);
+  }
+  for (const contourDataObjKey in ContourDataObj) {
+    let value = ContourDataObj[contourDataObjKey];
+    updateContourData(Number(contourDataObjKey), value);
+  }
+  updateSiteData([[15, 16, 19, 29], [0, 25, 26], [1, 2, 8], [3, 4, 5], [6, 7, 27], [10, 11, 20], [9, 12], [14, 18], [22, 28], [13], [17], [21], [23], [24]]);
+  getSiteData();
+}, 1000);
+
 

@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed, Ref } from 'vue'
 import { watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { OilfieldTreeNode } from '../types'
@@ -19,7 +19,7 @@ export function useOilfieldLayout(numberOfWells: Ref<number>, wellNames: Ref<str
   const oilfieldConfig = ref<OilfieldConfig>({
     id: 'oil-field1',
     name: 'oil field1',
-    wells: [1], // 初始化第一口井在ungrouped中
+    wells: [0], // 初始化第一口井在ungrouped中
     sites: []
   })
 
@@ -40,7 +40,7 @@ export function useOilfieldLayout(numberOfWells: Ref<number>, wellNames: Ref<str
     if (newWellCount > currentWellCount) {
       // 井数量增加：将新井添加到ungrouped中
       const newWells: number[] = []
-      for (let i = currentWellCount + 1; i <= newWellCount; i++) {
+      for (let i = currentWellCount; i < newWellCount; i++) {
         newWells.push(i)
       }
       oilfieldConfig.value.wells.push(...newWells)
@@ -73,17 +73,17 @@ export function useOilfieldLayout(numberOfWells: Ref<number>, wellNames: Ref<str
   // 展开状态管理
   const expandedKeys = ref([
     'oilfield-layout',
-    'oil-field1-ungrouped', 
+    'oil-field1-ungrouped',
     'oil-field1-grouped'
   ])
 
   // 生成井节点
   const generateWells = (wellNumbers: number[], prefix: string): OilfieldTreeNode[] => {
     return wellNumbers.map(wellNumber => {
-      const wellName = wellNames.value[wellNumber - 1] || `Well No${wellNumber}`
+      const wellName = wellNames.value[wellNumber] || `Well No${wellNumber+1}`
       return {
       id: `${prefix}-well-${wellNumber}`,
-        label: wellName,
+      label: wellName,
       type: 'well' as const
       }
     })
@@ -161,6 +161,7 @@ export function useOilfieldLayout(numberOfWells: Ref<number>, wellNames: Ref<str
   ) => {
     const field = oilfieldConfig.value
     let removeSuccess = false
+    let addSuccess = false
 
     // 从原位置移除
     if (fromSiteId !== null) {
@@ -188,6 +189,7 @@ export function useOilfieldLayout(numberOfWells: Ref<number>, wellNames: Ref<str
     if (toUngrouped) {
       field.wells.push(wellNumber)
       field.wells.sort((a, b) => a - b)
+      addSuccess = true
     } else if (toSiteId !== null) {
       const targetSite = field.sites.find(s => s.id === toSiteId)
       if (!targetSite) {
@@ -195,12 +197,20 @@ export function useOilfieldLayout(numberOfWells: Ref<number>, wellNames: Ref<str
       }
       targetSite.wells.push(wellNumber)
       targetSite.wells.sort((a, b) => a - b)
+      addSuccess = true
     }
 
     // 排序所有站点的井
     field.sites.forEach(site => {
       site.wells.sort((a, b) => a - b)
     })
+    if (addSuccess) {
+      eventBus.emit('updateWellSite', {
+        wellNumber,
+        toUngrouped: toUngrouped,
+        toSiteId: toSiteId
+      })
+    }
   }
 
   // 拖拽验证逻辑
@@ -259,7 +269,7 @@ export function useOilfieldLayout(numberOfWells: Ref<number>, wellNames: Ref<str
       }
 
       // 检查是否拖拽到同一位置
-      if (draggingWellInfo.isFromSite === !targetIsUngrouped && 
+      if (draggingWellInfo.isFromSite === !targetIsUngrouped &&
           draggingWellInfo.siteId === targetSiteId) {
         ElMessage.info('井已在目标位置，无需移动')
         return
@@ -273,8 +283,8 @@ export function useOilfieldLayout(numberOfWells: Ref<number>, wellNames: Ref<str
         targetIsUngrouped
       )
 
-      const targetLocation = targetIsUngrouped 
-        ? '未分组井' 
+      const targetLocation = targetIsUngrouped
+        ? '未分组井'
         : `站点 NO${targetSiteId}`
       
       ElMessage.success(`井 NO${draggingWellInfo.wellNumber} 已移动到${targetLocation}`)
@@ -314,7 +324,19 @@ export function useOilfieldLayout(numberOfWells: Ref<number>, wellNames: Ref<str
 
   // 监听site分组
   eventBus.on("updateSiteData", (newSiteData: Number[][]) => {
-    console.log('updateSiteData newSiteData:', newSiteData);
+    let sites = [];
+    newSiteData.forEach((siteData, index) => {
+      sites.push({
+        id: index + 1,
+        wells: siteData
+      })
+    })
+    oilfieldConfig.value = {
+      id: 'oil-field1',
+      name: 'oil field1',
+      wells: [],
+      sites
+    }
   })
 
   return {
