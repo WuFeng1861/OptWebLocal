@@ -13,8 +13,19 @@ const kickoffDirections = inject<Ref<Array<{
   vkz: number;
 }>>>('kickoffDirections')!
 
+const selectedWells = inject<Ref<number[]>>('selectedWells', ref([]))
+
 // 控制折叠面板的展开状态，默认全部展开
 const activeNames = ref(['depth', 'direction'])
+
+// 检查井是否被选中
+const isWellSelected = (wellIndex: number): boolean => {
+  const wellNumber = wellIndex + 1
+  return selectedWells.value.includes(wellNumber)
+}
+
+// 注入Select Wells启用状态
+const selectWellsEnabled = inject<Ref<boolean>>('selectWellsEnabled', ref(false))
 </script>
 
 <template>
@@ -33,7 +44,11 @@ const activeNames = ref(['depth', 'direction'])
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(point, index) in kickoffPoints" :key="index">
+              <tr v-for="(point, index) in kickoffPoints" :key="index" 
+                  :class="{ 
+                'selected-well-row': isWellSelected(index) && !selectWellsEnabled,
+                'selected-well-row-orange': isWellSelected(index) && selectWellsEnabled
+              }">
                 <td>{{ index + 1 }}</td>
                 <td>
                   <input
@@ -41,6 +56,7 @@ const activeNames = ref(['depth', 'direction'])
                     v-model="point.pkx"
                     step="0.01"
                     placeholder="[To be optimized]"
+                    class="w-full px-1.5 py-1 border rounded text-right"
                   >
                 </td>
                 <td>
@@ -49,6 +65,7 @@ const activeNames = ref(['depth', 'direction'])
                     v-model="point.pky"
                     step="0.01"
                     placeholder="[To be optimized]"
+                    class="w-full px-1.5 py-1 border rounded text-right"
                   >
                 </td>
                 <td>
@@ -56,6 +73,7 @@ const activeNames = ref(['depth', 'direction'])
                     type="number"
                     v-model="point.pkz"
                     step="0.01"
+                    class="w-full px-1.5 py-1 border rounded text-right"
                   >
                 </td>
               </tr>
@@ -77,7 +95,11 @@ const activeNames = ref(['depth', 'direction'])
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(direction, index) in kickoffDirections" :key="index">
+              <tr v-for="(direction, index) in kickoffDirections" :key="index" 
+                  :class="{ 
+                'selected-well-row': isWellSelected(index) && !selectWellsEnabled,
+                'selected-well-row-orange': isWellSelected(index) && selectWellsEnabled
+              }">
                 <td>{{ index + 1 }}</td>
                 <td>
                   <input
@@ -85,6 +107,7 @@ const activeNames = ref(['depth', 'direction'])
                     v-model="direction.vkx"
                     step="0.01"
                     placeholder=""
+                    class="w-full px-1.5 py-1 border rounded text-right"
                   >
                 </td>
                 <td>
@@ -93,6 +116,7 @@ const activeNames = ref(['depth', 'direction'])
                     v-model="direction.vky"
                     step="0.01"
                     placeholder=""
+                    class="w-full px-1.5 py-1 border rounded text-right"
                   >
                 </td>
                 <td>
@@ -100,6 +124,7 @@ const activeNames = ref(['depth', 'direction'])
                     type="number"
                     v-model="direction.vkz"
                     step="0.01"
+                    class="w-full px-1.5 py-1 border rounded text-right"
                   >
                 </td>
               </tr>
@@ -113,4 +138,6 @@ const activeNames = ref(['depth', 'direction'])
 
 <style scoped>
 @import '../styles/shared.css';
+
+/* 组件特定的样式可以在这里添加 */
 </style>

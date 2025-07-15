@@ -1,17 +1,12 @@
 <script setup lang="ts">
 import { ref, inject, computed, watch } from 'vue'
+import type { Surface } from '../types'
 import MultiSelect from './MultiSelect.vue'
+import { useConstraints } from '../composables'
 
-interface Surface {
-  depth: number;
-  inclination: string;
-  selectedWells: number[];
-  areaFormula: string;
-  displayArea: boolean;
-  setIntermediatePoint: boolean;
-}
 
 const numberOfWells = inject<Readonly<Ref<number>>>('numberOfWells')!
+const selectedWells = inject<Ref<number[]>>('selectedWells', ref([]))
 const otherConstraints = inject<Ref<{
   drillSite: {
     mode: 'unify' | 'specify'
@@ -51,6 +46,23 @@ const otherConstraints = inject<Ref<{
   }
 }>>('otherConstraints')!
 
+// 使用 composable
+const {
+  validateAngle,
+  handleAngleInput,
+  handleAngleBlur,
+  syncConstraintsWithWells
+} = useConstraints()
+
+// 检查井是否被选中
+const isWellSelected = (wellIndex: number): boolean => {
+  const wellNumber = wellIndex + 1
+  return selectedWells.value.includes(wellNumber)
+}
+
+// 注入Select Wells启用状态
+const selectWellsEnabled = inject<Ref<boolean>>('selectWellsEnabled', ref(false))
+
 // 控制折叠面板的展开状态
 const activeNames = ref(['drill-site', 'max-turn-angle', 'layers'])
 
@@ -73,94 +85,9 @@ const wellOptions = computed(() => {
   return options
 })
 
-// 验证角度输入（0-180度）
-const validateAngle = (value: string): string => {
-  const num = parseFloat(value)
-  if (isNaN(num)) return value
-  
-  // 限制在0-180范围内
-  if (num < 0) return '0'
-  if (num > 180) return '180'
-  
-  return value
-}
-
-// 处理角度输入
-const handleAngleInput = (obj: any, key: string, event: Event) => {
-  const target = event.target as HTMLInputElement
-  const validatedValue = validateAngle(target.value)
-  obj[key] = validatedValue
-  target.value = validatedValue
-}
-
-// 处理角度失焦验证
-const handleAngleBlur = (obj: any, key: string, event: Event) => {
-  const target = event.target as HTMLInputElement
-  const value = target.value.trim()
-  
-  if (value === '') {
-    obj[key] = ''
-    return
-  }
-  
-  const num = parseFloat(value)
-  
-  // 如果不是有效数字或不在0-180范围内，则清空
-  if (isNaN(num) || num < 0 || num > 180) {
-    obj[key] = ''
-    target.value = ''
-  } else {
-    // 如果是有效范围内的数字，保持原值
-    obj[key] = num
-  }
-}
-
 // 监听井数变化，更新Specify表格数据
 watch(numberOfWells, (newValue) => {
-  // 更新Drill Site Specify数据
-  while (otherConstraints.value.drillSite.specify.length < newValue) {
-    otherConstraints.value.drillSite.specify.push({
-      wellNo: otherConstraints.value.drillSite.specify.length + 1,
-      formula: ''
-    })
-  }
-  while (otherConstraints.value.drillSite.specify.length > newValue) {
-    otherConstraints.value.drillSite.specify.pop()
-  }
-
-  // 更新Max Turn Angle Specify数据
-  while (otherConstraints.value.maxTurnAngle.specify.angles.length < newValue) {
-    otherConstraints.value.maxTurnAngle.specify.angles.push({
-      wellNo: otherConstraints.value.maxTurnAngle.specify.angles.length + 1,
-      firstCurve: '',
-      secondCurve: ''
-    })
-  }
-  while (otherConstraints.value.maxTurnAngle.specify.angles.length > newValue) {
-    otherConstraints.value.maxTurnAngle.specify.angles.pop()
-  }
-
-  // 更新Custom Function Specify数据
-  while (otherConstraints.value.maxTurnAngle.specify.customFunctions.length < newValue) {
-    otherConstraints.value.maxTurnAngle.specify.customFunctions.push({
-      wellNo: otherConstraints.value.maxTurnAngle.specify.customFunctions.length + 1,
-      customFunction: ''
-    })
-  }
-  while (otherConstraints.value.maxTurnAngle.specify.customFunctions.length > newValue) {
-    otherConstraints.value.maxTurnAngle.specify.customFunctions.pop()
-  }
-
-  // 更新Layers Specify数据
-  while (otherConstraints.value.layers.specify.length < newValue) {
-    otherConstraints.value.layers.specify.push({
-      wellNo: otherConstraints.value.layers.specify.length + 1,
-      formula: ''
-    })
-  }
-  while (otherConstraints.value.layers.specify.length > newValue) {
-    otherConstraints.value.layers.specify.pop()
-  }
+  syncConstraintsWithWells(newValue, otherConstraints.value)
 }, { immediate: true })
 
 // Watch for changes in numberOfSurfaces and update surfaces array
@@ -238,13 +165,18 @@ watch(() => otherConstraints.value.layers.unify.numberOfSurfaces, (newValue) => 
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(item, index) in otherConstraints.drillSite.specify" :key="index">
+                  <tr v-for="(item, index) in otherConstraints.drillSite.specify" :key="index"
+                      :class="{ 
+                        'selected-well-row': isWellSelected(index) && !selectWellsEnabled,
+                        'selected-well-row-orange': isWellSelected(index) && selectWellsEnabled
+                      }">
                     <td>{{ item.wellNo }}</td>
                     <td>
                       <input
                         type="text"
                         v-model="item.formula"
                         placeholder=""
+                        class="w-full px-1.5 py-1 border rounded text-right"
                       >
                     </td>
                   </tr>
@@ -374,7 +306,10 @@ watch(() => otherConstraints.value.layers.unify.numberOfSurfaces, (newValue) => 
                 </thead>
                 <tbody>
                   <tr v-for="(item, index) in otherConstraints.maxTurnAngle.specify.angles" :key="index">
-                    <td>{{ item.wellNo }}</td>
+                    <td :class="{ 
+                      'selected-well-row': isWellSelected(index) && !selectWellsEnabled,
+                      'selected-well-row-orange': isWellSelected(index) && selectWellsEnabled
+                    }">{{ item.wellNo }}</td>
                     <td>
                       <input
                         type="text"
@@ -385,6 +320,10 @@ watch(() => otherConstraints.value.layers.unify.numberOfSurfaces, (newValue) => 
                         max="180"
                         step="0.1"
                         placeholder=""
+                        :class="{ 
+                          'selected-well-input': isWellSelected(index) && !selectWellsEnabled,
+                          'selected-well-input-orange': isWellSelected(index) && selectWellsEnabled
+                        }"
                       >
                     </td>
                     <td>
@@ -397,6 +336,10 @@ watch(() => otherConstraints.value.layers.unify.numberOfSurfaces, (newValue) => 
                         max="180"
                         step="0.1"
                         placeholder=""
+                        :class="{ 
+                          'selected-well-input': isWellSelected(index) && !selectWellsEnabled,
+                          'selected-well-input-orange': isWellSelected(index) && selectWellsEnabled
+                        }"
                       >
                     </td>
                   </tr>
@@ -416,13 +359,18 @@ watch(() => otherConstraints.value.layers.unify.numberOfSurfaces, (newValue) => 
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(item, index) in otherConstraints.maxTurnAngle.specify.customFunctions" :key="index">
+                    <tr v-for="(item, index) in otherConstraints.maxTurnAngle.specify.customFunctions" :key="index"
+                        :class="{ 
+                          'selected-well-row': isWellSelected(index) && !selectWellsEnabled,
+                          'selected-well-row-orange': isWellSelected(index) && selectWellsEnabled
+                        }">
                       <td>{{ item.wellNo }}</td>
                       <td>
                         <input
                           type="text"
                           v-model="item.customFunction"
                           placeholder=""
+                          class="w-full px-1.5 py-1 border rounded text-right"
                         >
                       </td>
                     </tr>
@@ -574,13 +522,18 @@ watch(() => otherConstraints.value.layers.unify.numberOfSurfaces, (newValue) => 
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(item, index) in otherConstraints.layers.specify" :key="index">
+                  <tr v-for="(item, index) in otherConstraints.layers.specify" :key="index"
+                      :class="{ 
+                        'selected-well-row': isWellSelected(index) && !selectWellsEnabled,
+                        'selected-well-row-orange': isWellSelected(index) && selectWellsEnabled
+                      }">
                     <td>{{ item.wellNo }}</td>
                     <td>
                       <input
                         type="text"
                         v-model="item.formula"
                         placeholder="Layer constraint formula"
+                        class="w-full px-1.5 py-1 border rounded text-right"
                       >
                     </td>
                   </tr>
@@ -596,4 +549,6 @@ watch(() => otherConstraints.value.layers.unify.numberOfSurfaces, (newValue) => 
 
 <style scoped>
 @import '../styles/shared.css';
+
+/* 组件特定的样式可以在这里添加 */
 </style>

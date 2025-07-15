@@ -1,113 +1,29 @@
 <script setup lang="ts">
 import { ref, provide, readonly, watch } from 'vue'
+import type { 
+  Point, 
+  CustomFunction, 
+  KickoffPoint, 
+  KickoffDirection, 
+  DoglegPoint, 
+  Surface, 
+  ComputeState, 
+  OtherConstraintsState 
+} from './types'
 import ConfigurationPanel from './components/ConfigurationPanel.vue'
+import OilfieldLayoutTree from './components/OilfieldLayoutTree.vue'
 // import VisualizationPanel from './components/VisualizationPanel.vue'
 
-interface CustomFunction {
-  formula: string
-}
-
-interface Point {
-  x: string
-  y: string
-  z: string
-}
-
-interface KickoffPoint {
-  pkx: number | null
-  pky: number | null
-  pkz: number
-}
-
-interface KickoffDirection {
-  vkx: number | null
-  vky: number | null
-  vkz: number
-}
-
-interface DoglegPoint {
-  dogleg: string
-  radius: number
-}
-
-interface Surface {
-  depth: number
-  inclination: string
-  selectedWells: number[]
-  areaFormula: string
-  displayArea: boolean
-  setIntermediatePoint: boolean
-}
-
-interface ComputeState {
-  problemType: string
-  cluster_min: number
-  cluster_max: number
-  sitePreparationCost: number
-  numberOfClusterSizes: number
-  clusterSizes: Array<{ size: number; cost: number }>
-  economicZoneThreshold: number
-  parallelComputing: boolean
-  threadCount: number
-  designatePosition: boolean
-  ranges: {
-    x: { mode: 'Auto' | 'Manual'; value: string }
-    y: { mode: 'Auto' | 'Manual'; value: string }
-    radius: { mode: 'Auto' | 'Manual'; value: string }
-    resolution: { mode: 'Auto' | 'Manual'; value: string }
-    wellNo: { mode: 'All' | 'Manual'; value: string }
-    initialGuess: { mode: 'Auto' | 'Manual'; value: string }
-  }
-}
-
-interface OtherConstraintsState {
-  // Drill Site Location 配置
-  drillSite: {
-    mode: 'unify' | 'specify'
-    unify: {
-      enabled: boolean
-      formula: string
-    }
-    specify: Array<{ wellNo: number; formula: string }>
-  }
-  
-  // Max Turn Angle 配置
-  maxTurnAngle: {
-    mode: 'unify' | 'specify'
-    unify: {
-      firstCurve: {
-        enabled: boolean
-        angle: string
-      }
-      secondCurve: {
-        enabled: boolean
-        angle: string
-      }
-      customFunction: {
-        enabled: boolean
-        formula: string
-      }
-    }
-    specify: {
-      angles: Array<{ wellNo: number; firstCurve: string; secondCurve: string }>
-      customFunctions: Array<{ wellNo: number; customFunction: string }>
-    }
-  }
-  
-  // Layers 配置
-  layers: {
-    mode: 'unify' | 'specify'
-    unify: {
-      numberOfSurfaces: number
-    }
-    specify: Array<{ wellNo: number; formula: string }>
-  }
-}
 
 const activeTab = ref('completion-intervals')
 const numberOfWells = ref(1)
 const targetPoints = ref<Point[]>([{ x: '', y: '', z: '' }])
 const entryDirections = ref<Point[]>([{ x: '', y: '', z: '' }])
+const wellNames = ref<string[]>(['Well No1'])
+
+// 选中的井编号数组
+const selectedWells = ref<number[]>([])
+const selectWellsEnabled = ref(false)
 
 // Kickoff state
 const kickoffPoints = ref<KickoffPoint[]>([{
@@ -215,6 +131,22 @@ provide('numberOfWells', readonly(numberOfWells))
 provide('updateNumberOfWells', (value: number) => {
   numberOfWells.value = value
 
+  // Update well names array
+  while (wellNames.value.length < value) {
+    wellNames.value.push(`Well No${wellNames.value.length + 1}`)
+  }
+  while (wellNames.value.length > value) {
+    wellNames.value.pop()
+  }
+
+  // Update well names array
+  while (wellNames.value.length < value) {
+    wellNames.value.push(`Well No${wellNames.value.length + 1}`)
+  }
+  while (wellNames.value.length > value) {
+    wellNames.value.pop()
+  }
+
 
   // Update arrays when number of wells changes
   while (targetPoints.value.length < value) {
@@ -275,6 +207,12 @@ provide('updateNumberOfWells', (value: number) => {
   }
 })
 
+provide('wellNames', wellNames)
+provide('updateWellName', (index: number, newName: string) => {
+  if (index >= 0 && index < wellNames.value.length) {
+    wellNames.value[index] = newName
+  }
+})
 provide('targetPoints', targetPoints)
 provide('entryDirections', entryDirections)
 provide('selectedObjective', selectedObjective)
@@ -288,6 +226,12 @@ provide('otherConstraints', otherConstraints)
 provide('surfaces', surfaces)
 provide('activeSurfaceIndex', activeSurfaceIndex)
 provide('computeState', computeState)
+provide('selectedWells', selectedWells)
+provide('updateSelectedWells', (wells: number[]) => {
+  console.log(wells);
+  selectedWells.value = wells
+})
+provide('selectWellsEnabled', selectWellsEnabled)
 
 // Reset formula when switching objectives
 watch(selectedObjective, (newValue) => {
@@ -314,6 +258,15 @@ const handleOpenFile = async () => {
       // 更新 numberOfWells
       numberOfWells.value = fieldOptBlock.n.VALUE
 
+      // 更新 tag -> wellNames
+      let wellNamesTemp = Array.from({length:fieldOptBlock.n.VALUE}, (_, _i) => `Well No${_i}`);
+      if(fieldOptBlock.tag.value.length === fieldOptBlock.n.VALUE) {
+        wellNamesTemp = fieldOptBlock.tag.value.map((it,_i) => {
+          return !it ? `Well No${_i+1}`: it;
+        })
+      }
+      wellNames.value === wellNamesTemp;
+      
       // 更新 targetPoints
       targetPoints.value = fieldOptBlock.PCM.VALUE.map((point: number[]) => ({
         x: point[0].toString(),
@@ -496,7 +449,11 @@ const handleOpenFile = async () => {
       </button>
     </div>
 
-    <div class="flex-1 grid grid-cols-[400px,1fr]">
+    <div class="flex-1 grid grid-cols-[250px,400px,1fr]">
+            
+      <!-- Oilfield Layout Tree - 新增的左侧树形组件 -->
+      <OilfieldLayoutTree />
+      
       <!-- Left Panel -->
       <ConfigurationPanel :number-of-wells="numberOfWells" />
 

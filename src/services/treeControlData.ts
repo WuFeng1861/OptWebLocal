@@ -1,3 +1,4 @@
+import type { TreeData } from '../types'
 import {
   changeAllContourShow,
   changeAllCurvesShow,
@@ -14,11 +15,6 @@ import {
 } from './dataTemp';
 import {ref, Ref} from 'vue';
 
-export type TreeData = {
-  id: string,
-  label: string,
-  children?: TreeData[]
-}
 const CurvesIndexListRef = getCurvesIndexListRef();
 const ContourIndexListRef = getContourIndexListRef();
 const SiteData = getSiteData();

@@ -1,15 +1,31 @@
 <script setup lang="ts">
-import { inject, Ref, ref } from 'vue'
+import { inject, Ref, ref, watch } from 'vue'
 
 const numberOfWells = inject<Readonly<Ref<number>>>('numberOfWells')!
 const targetPoints = inject<Ref<Array<{x: string, y: string, z: string}>>>('targetPoints')!
 const entryDirections = inject<Ref<Array<{x: string, y: string, z: string}>>>('entryDirections')!
 const updateNumberOfWells = inject<(value: number) => void>('updateNumberOfWells')!
+const selectedWells = inject<Ref<number[]>>('selectedWells', ref([]))
 
 // 控制折叠面板的展开状态，默认全部展开
 const activeNames = ref(['wells', 'target', 'entry'])
 
+// 临时存储输入值
+const tempWellsCount = ref(numberOfWells.value.toString())
+
+// 监听 numberOfWells 变化，同步到临时值
+watch(numberOfWells, (newValue) => {
+  tempWellsCount.value = newValue.toString()
+})
 // 格式化为两位小数的函数
+// 检查井是否被选中
+const isWellSelected = (wellIndex: number): boolean => {
+  const wellNumber = wellIndex + 1
+  return selectedWells.value.includes(wellNumber)
+}
+
+// 注入Select Wells启用状态
+const selectWellsEnabled = inject<Ref<boolean>>('selectWellsEnabled', ref(false))
 const formatToTwoDecimals = (obj: any, key: string) => {
   const value = parseFloat(obj[key])
   if (!isNaN(value)) {
@@ -20,11 +36,29 @@ const formatToTwoDecimals = (obj: any, key: string) => {
   }
 }
 
-const handleNumberOfWellsInput = (e: Event) => {
+// 处理井数量输入
+const handleWellsInput = (e: Event) => {
   const input = e.target as HTMLInputElement
+  // 只允许数字输入
   const value = input.value.replace(/[^0-9]/g, '')
-  const numValue = value ? Math.max(1, parseInt(value)) : 1
+  tempWellsCount.value = value
+  input.value = value
+}
+
+// 确认井数量修改
+const confirmWellsChange = () => {
+  const numValue = tempWellsCount.value ? Math.max(1, parseInt(tempWellsCount.value)) : 1
+  tempWellsCount.value = numValue.toString()
   updateNumberOfWells(numValue)
+}
+
+// 处理按键事件
+const handleWellsKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Enter') {
+    confirmWellsChange()
+    const input = e.target as HTMLInputElement
+    input.blur() // 失去焦点
+  }
 }
 </script>
 
@@ -38,8 +72,10 @@ const handleNumberOfWellsInput = (e: Event) => {
             <input
                 type="number"
                 min="1"
-                :value="numberOfWells"
-                @input="handleNumberOfWellsInput"
+                v-model="tempWellsCount"
+                @input="handleWellsInput"
+                @blur="confirmWellsChange"
+                @keydown="handleWellsKeydown"
                 class="border rounded px-2 py-1 w-16 text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             >
           </div>
@@ -57,7 +93,14 @@ const handleNumberOfWellsInput = (e: Event) => {
             </tr>
             </thead>
             <tbody>
-            <tr v-for="(point, index) in targetPoints" :key="index">
+            <tr 
+              v-for="(point, index) in targetPoints" 
+              :key="index"
+              :class="{ 
+                'selected-well-row': isWellSelected(index) && !selectWellsEnabled,
+                'selected-well-row-orange': isWellSelected(index) && selectWellsEnabled
+              }"
+            >
               <td>{{ index + 1 }}</td>
               <td>
                 <input
@@ -101,7 +144,14 @@ const handleNumberOfWellsInput = (e: Event) => {
             </tr>
             </thead>
             <tbody>
-            <tr v-for="(direction, index) in entryDirections" :key="index">
+            <tr 
+              v-for="(direction, index) in entryDirections" 
+              :key="index"
+              :class="{ 
+                'selected-well-row': isWellSelected(index) && !selectWellsEnabled,
+                'selected-well-row-orange': isWellSelected(index) && selectWellsEnabled
+              }"
+            >
               <td>{{ index + 1 }}</td>
               <td>
                 <input
@@ -138,4 +188,6 @@ const handleNumberOfWellsInput = (e: Event) => {
 
 <style scoped>
 @import '../styles/shared.css';
+
+/* 组件特定的样式可以在这里添加 */
 </style>

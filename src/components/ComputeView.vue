@@ -2,6 +2,7 @@
 import { inject, watch, ref, computed, watchEffect } from 'vue'
 import { buildRequestData, sendComputeRequest } from '../services/api'
 import { ElMessage } from 'element-plus'
+import { useComputeValidation, useRangeCalculation } from '../composables'
 
 const computeState = inject<Ref<{
   problemType: string;
@@ -24,131 +25,25 @@ const computeState = inject<Ref<{
 }>>('computeState')!
 
 const numberOfWells = inject<Readonly<Ref<number>>>('numberOfWells')!
+const wellNames = inject<Ref<string[]>>('wellNames')!
 const targetPoints = inject<Ref<Array<{x: string, y: string, z: string}>>>('targetPoints')!
 const entryDirections = inject<Ref<Array<{x: string, y: string, z: string}>>>('entryDirections')!
 const kickoffPoints = inject<Ref<Array<{pkx: number | null, pky: number | null, pkz: number}>>>('kickoffPoints')!
 const kickoffDirections = inject<Ref<Array<{vkx: number | null, vky: number | null, vkz: number}>>>('kickoffDirections')!
 const doglegPoints = inject<Ref<Array<{dogleg: number, radius: number}>>>('doglegPoints')!
 const otherConstraints = inject<Ref<any>>('otherConstraints')!
+const selectedWells = inject<Ref<number[]>>('selectedWells', ref([]))
+const updateSelectedWells = inject<(wells: number[]) => void>('updateSelectedWells', () => {})
+const selectWellsEnabled = inject<Ref<boolean>>('selectWellsEnabled', ref(false))
+
+// 使用 composables
+const { validateData } = useComputeValidation()
+const { calculateAutoXRange, calculateAutoYRange, calculateAutoInitialGuess } = useRangeCalculation(
+  targetPoints.value,
+  doglegPoints.value
+)
 
 // 计算X Range的自动值
-const calculateAutoXRange = () => {
-  const ranges: number[] = []
-  
-  for (let i = 0; i < targetPoints.value.length; i++) {
-    const targetPoint = targetPoints.value[i]
-    const doglegPoint = doglegPoints.value[i]
-    console.log(targetPoint, doglegPoint, "calculateAutoXRange");
-    
-    if (targetPoint && doglegPoint) {
-      const p2x = parseFloat(targetPoint.x)
-      
-      // 解析radius字符串，选出最大值
-      let maxRadius = 0
-      if (typeof doglegPoint.radius === 'string') {
-        const radiusValues = doglegPoint.radius.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v))
-        maxRadius = radiusValues.length > 0 ? Math.max(...radiusValues) : 0
-      } else {
-        maxRadius = doglegPoint.radius || 0
-      }
-      
-      if (!isNaN(p2x) && maxRadius > 0) {
-        const minRange = p2x - maxRadius - 1000
-        const maxRange = p2x + maxRadius + 1000
-        ranges.push(minRange, maxRange)
-      }
-    }
-  }
-  
-  if (ranges.length > 0) {
-    const minValue = Math.min(...ranges)
-    const maxValue = Math.max(...ranges)
-    // 向下取整到500的倍数（减去额外的500）
-    const formattedMin = Math.floor((minValue - 500) / 500) * 500
-    // 向上取整到500的倍数（加上额外的500）
-    const formattedMax = Math.ceil((maxValue + 500) / 500) * 500
-    
-    return [formattedMin, formattedMax]
-  }
-  
-  return [0, 0]
-}
-
-// 计算Y Range的自动值
-const calculateAutoYRange = () => {
-  const ranges: number[] = []
-  
-  for (let i = 0; i < targetPoints.value.length; i++) {
-    const targetPoint = targetPoints.value[i]
-    const doglegPoint = doglegPoints.value[i]
-    
-    if (targetPoint && doglegPoint) {
-      const p2y = parseFloat(targetPoint.y)
-      
-      // 解析radius字符串，选出最大值
-      let maxRadius = 0
-      if (typeof doglegPoint.radius === 'string') {
-        const radiusValues = doglegPoint.radius.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v))
-        maxRadius = radiusValues.length > 0 ? Math.max(...radiusValues) : 0
-      } else {
-        maxRadius = doglegPoint.radius || 0
-      }
-      
-      if (!isNaN(p2y) && maxRadius > 0) {
-        const minRange = p2y - maxRadius - 1000
-        const maxRange = p2y + maxRadius + 1000
-        ranges.push(minRange, maxRange)
-      }
-    }
-  }
-  
-  if (ranges.length > 0) {
-    const minValue = Math.min(...ranges)
-    const maxValue = Math.max(...ranges)
-    
-    // 向下取整到500的倍数（减去额外的500）
-    const formattedMin = Math.floor((minValue - 500) / 500) * 500
-    // 向上取整到500的倍数（加上额外的500）
-    const formattedMax = Math.ceil((maxValue + 500) / 500) * 500
-    
-    return [formattedMin, formattedMax]
-  }
-  
-  return [0, 0]
-}
-
-// 计算 Initial Guess 的自动值（Target Points 的 x 和 y 的平均值）
-const calculateAutoInitialGuess = () => {
-  if (targetPoints.value.length === 0) {
-    return [0, 0]
-  }
-  
-  let totalX = 0
-  let totalY = 0
-  let validCount = 0
-  
-  for (const point of targetPoints.value) {
-    const x = parseFloat(point.x)
-    const y = parseFloat(point.y)
-    
-    if (!isNaN(x) && !isNaN(y)) {
-      totalX += x
-      totalY += y
-      validCount++
-    }
-  }
-  
-  if (validCount === 0) {
-    return [0, 0]
-  }
-  
-  // 计算平均值并保留2位小数
-  const avgX = Math.floor((totalX / validCount) * 100) / 100
-  const avgY = Math.floor((totalY / validCount) * 100) / 100
-  
-  return [avgX, avgY]
-}
-
 // 监听相关数据变化，自动更新范围值
 watchEffect(() => {
   if (computeState.value.ranges.x.mode === 'Auto') {
@@ -172,105 +67,63 @@ watchEffect(() => {
 })
 
 // 控制折叠面板的展开状态，默认全部展开
-const activeNames = ref(['cost-contour', 'optimal-layout', 'optimal-site'])
+const activeNames = ref(['select-wells', 'cost-contour', 'optimal-layout', 'optimal-site'])
 
-// 数据验证函数
-const validateData = () => {
-  const errors: string[] = []
+// Select Wells 状态
+const wellsInputValue = ref('')
+
+// 监听选中井的变化，更新输入框内容
+watch(selectedWells, (newWells) => {
+  // 始终同步选中井数据到输入框
+  wellsInputValue.value = JSON.stringify(newWells)
+}, { immediate: true })
+
+// 监听单选按钮状态变化
+watch(selectWellsEnabled, (enabled) => {
+  if (!enabled) {
+    // 禁用时，清空选择
+  }
+})
+
+// 处理输入框内容变化
+const handleWellsInputChange = () => {
+  if (!selectWellsEnabled.value) return
   
-  // 1. 检查 Number of Wells 不能小于1
-  if (numberOfWells.value < 1) {
-    errors.push('Number of wells cannot be less than 1')
+  const input = wellsInputValue.value.trim()
+  if (!input) {
+    updateSelectedWells([])
+    return
   }
   
-  // 2. 检查 Target Points (PT) 不能有空值
-  for (let i = 0; i < targetPoints.value.length; i++) {
-    const point = targetPoints.value[i]
-    if (!point.x || !point.y || !point.z) {
-      errors.push(`Target point ${i + 1} coordinates cannot be empty (P2x: ${point.x}, P2y: ${point.y}, P2z: ${point.z})`)
+  try {
+    // 解析JSON数组格式的井号
+    const parsedArray = JSON.parse(input)
+    if (!Array.isArray(parsedArray)) {
+      return
     }
     
-    // 检查是否为有效数字
-    if (point.x && isNaN(parseFloat(point.x))) {
-      errors.push(`Target point ${i + 1} P2x must be a valid number`)
-    }
-    if (point.y && isNaN(parseFloat(point.y))) {
-      errors.push(`Target point ${i + 1} P2y must be a valid number`)
-    }
-    if (point.z && isNaN(parseFloat(point.z))) {
-      errors.push(`Target point ${i + 1} P2z must be a valid number`)
-    }
+    const wellNumbers = parsedArray
+      .map(n => parseInt(n))
+      .filter(n => !isNaN(n) && n >= 1 && n <= numberOfWells.value)
+    
+    // 去重并排序
+    const uniqueWells = [...new Set(wellNumbers)].sort((a, b) => a - b)
+    updateSelectedWells(uniqueWells)
+  } catch (error) {
+    // 如果JSON解析失败，不做任何操作
+    console.warn('Invalid JSON format for wells input')
   }
-  
-  // 3. 检查 Entry Directions (VT) 不能有空值
-  for (let i = 0; i < entryDirections.value.length; i++) {
-    const direction = entryDirections.value[i]
-    if (!direction.x || !direction.y || !direction.z) {
-      errors.push(`Entry direction ${i + 1} coordinates cannot be empty (V2x: ${direction.x}, V2y: ${direction.y}, V2z: ${direction.z})`)
-    }
-    
-    // 检查是否为有效数字
-    if (direction.x && isNaN(parseFloat(direction.x))) {
-      errors.push(`Entry direction ${i + 1} V2x must be a valid number`)
-    }
-    if (direction.y && isNaN(parseFloat(direction.y))) {
-      errors.push(`Entry direction ${i + 1} V2y must be a valid number`)
-    }
-    if (direction.z && isNaN(parseFloat(direction.z))) {
-      errors.push(`Entry direction ${i + 1} V2z must be a valid number`)
-    }
-  }
-  
-  // 4. 检查 Dogleg 数据不能有空值，且 dogleg 和 radius 的数据位数要一致
-  for (let i = 0; i < doglegPoints.value.length; i++) {
-    const point = doglegPoints.value[i]
-    
-    // 检查 dogleg 不能为空
-    if (!point.dogleg || point.dogleg.toString().trim() === '') {
-      errors.push(`Well ${i + 1} dogleg value cannot be empty`)
-      continue
-    }
-    
-    // 检查 radius 不能为空
-    if (!point.radius || point.radius.toString().trim() === '') {
-      errors.push(`Well ${i + 1} radius value cannot be empty`)
-      continue
-    }
-    
-    // 解析 dogleg 和 radius 的数组长度
-    const doglegStr = point.dogleg.toString().replace(/，/g, ',')
-    const radiusStr = point.radius.toString().replace(/，/g, ',')
-    
-    const doglegValues = doglegStr.split(',').map(v => v.trim()).filter(v => v !== '')
-    const radiusValues = radiusStr.split(',').map(v => v.trim()).filter(v => v !== '')
-    
-    // 检查 dogleg 值是否都是有效数字
-    for (let j = 0; j < doglegValues.length; j++) {
-      if (isNaN(parseFloat(doglegValues[j]))) {
-        errors.push(`Well ${i + 1} dogleg value ${j + 1} must be a valid number`)
-      }
-    }
-    
-    // 检查 radius 值是否都是有效数字
-    for (let j = 0; j < radiusValues.length; j++) {
-      if (isNaN(parseFloat(radiusValues[j]))) {
-        errors.push(`Well ${i + 1} radius value ${j + 1} must be a valid number`)
-      }
-    }
-    
-    // 检查 dogleg 和 radius 的数据位数是否一致
-    if (doglegValues.length !== radiusValues.length) {
-      errors.push(`Well ${i + 1} dogleg and radius data count mismatch (dogleg: ${doglegValues.length} values, radius: ${radiusValues.length} values)`)
-    }
-  }
-  
-  return errors
 }
 
 const sendRequest = async () => {
   try {
     // 进行数据验证
-    const validationErrors = validateData()
+    const validationErrors = validateData(
+      numberOfWells.value,
+      targetPoints.value,
+      entryDirections.value,
+      doglegPoints.value
+    )
     
     if (validationErrors.length > 0) {
       // 显示验证错误信息
@@ -289,6 +142,7 @@ const sendRequest = async () => {
     
     const data = buildRequestData(
         numberOfWells.value,
+        wellNames.value,
         targetPoints.value,
         entryDirections.value,
         kickoffPoints.value,
@@ -327,6 +181,36 @@ watch(() => computeState.value.clusterSizes.length, (newLength) => {
 <template>
   <div class="pb-6 max-h-[calc(100vh-500px)] overflow-y-auto">
     <el-collapse v-model="activeNames" class="custom-collapse">
+      <!-- Select Wells -->
+      <el-collapse-item title="Select Wells" name="select-wells">
+        <div class="p-4 space-y-3">
+          <div class="flex items-center space-x-3">
+            <label class="inline-flex items-center">
+              <input 
+                type="checkbox" 
+                v-model="selectWellsEnabled" 
+                class="form-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              >
+              <span class="ml-2 text-sm">Select Wells:</span>
+            </label>
+            <input
+              type="text"
+              v-model="wellsInputValue"
+              @blur="handleWellsInputChange"
+              :disabled="!selectWellsEnabled"
+              class="border rounded px-2 py-1 w-48 text-sm"
+              :class="{ 'bg-gray-100 cursor-not-allowed': !selectWellsEnabled }"
+            >
+          </div>
+          <div class="text-xs text-gray-500">
+            Enter well numbers as JSON array (e.g. [1, 3, 5]). Selected wells will be highlighted in other pages.
+          </div>
+          <div v-if="selectedWells.length > 0" class="text-xs text-blue-600">
+            Currently selected {{ selectedWells.length }} wells: {{ JSON.stringify(selectedWells) }}
+          </div>
+        </div>
+      </el-collapse-item>
+
       <!-- Cost Contour -->
       <el-collapse-item title="Cost Contour" name="cost-contour">
         <div class="p-4 space-y-3">

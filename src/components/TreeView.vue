@@ -1,12 +1,5 @@
 <script setup lang="ts">
-
-export interface TreeNode {
-  id: string;
-  label: string;
-  checked: boolean;
-  children?: TreeNode[];
-  expanded?: boolean;
-}
+import type { TreeNode } from '../types'
 
 const props = defineProps<{
   data: TreeNode[];

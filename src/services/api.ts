@@ -1,86 +1,12 @@
 import axios from 'axios'
-
-interface Point {
-  x: string
-  y: string
-  z: string
-}
-
-interface KickoffPoint {
-  pkx: number
-  pky: number
-  pkz: number
-}
-
-interface KickoffDirection {
-  vkx: number
-  vky: number
-  vkz: number
-}
-
-interface DoglegPoint {
-  dogleg: string
-  radius: string
-}
-
-interface ComputeState {
-  problemType: string
-  cluster_min: number
-  cluster_max: number
-  sitePreparationCost: number
-  numberOfClusterSizes: number
-  clusterSizes: Array<{ size: number; cost: number }>
-  economicZoneThreshold: number
-  parallelComputing: boolean
-  threadCount: number
-  designatePosition: boolean
-  ranges: {
-    x: { mode: 'Auto' | 'Manual'; value: string }
-    y: { mode: 'Auto' | 'Manual'; value: string }
-    radius: { mode: 'Auto' | 'Manual'; value: string }
-    resolution: { mode: 'Auto' | 'Manual'; value: string }
-    initialGuess: { mode: 'Auto' | 'Manual'; value: string }
-  }
-}
-
-interface OtherConstraintsState {
-  drillSite: {
-    mode: 'unify' | 'specify'
-    unify: {
-      enabled: boolean
-      formula: string
-    }
-    specify: Array<{ wellNo: number; formula: string }>
-  }
-  maxTurnAngle: {
-    mode: 'unify' | 'specify'
-    unify: {
-      firstCurve: {
-        enabled: boolean
-        angle: string
-      }
-      secondCurve: {
-        enabled: boolean
-        angle: string
-      }
-      customFunction: {
-        enabled: boolean
-        formula: string
-      }
-    }
-    specify: {
-      angles: Array<{ wellNo: number; firstCurve: string; secondCurve: string }>
-      customFunctions: Array<{ wellNo: number; customFunction: string }>
-    }
-  }
-  layers: {
-    mode: 'unify' | 'specify'
-    unify: {
-      numberOfSurfaces: number
-    }
-    specify: Array<{ wellNo: number; formula: string }>
-  }
-}
+import type { 
+  Point, 
+  KickoffPoint, 
+  KickoffDirection, 
+  DoglegPoint, 
+  ComputeState, 
+  OtherConstraintsState 
+} from '../types'
 
 // 构建 necon 约束数据
 function buildNeconConstraints(
@@ -180,6 +106,7 @@ function buildNeconConstraints(
 
 export function buildRequestData(
   numberOfWells: number,
+  wellNames: string[],
   targetPoints: Point[],
   entryDirections: Point[],
   kickoffPoints: KickoffPoint[],
@@ -199,6 +126,11 @@ export function buildRequestData(
         "DESCRIPTION": "number of wells",
         "UNIT": "",
         "VALUE": numberOfWells
+      },
+      "tag": {
+        "DESCRIPTION": "well tag",
+        "UNIT": "",
+        "VALUE": wellNames
       },
       "WellNo": {
         "DESCRIPTION": "well index",

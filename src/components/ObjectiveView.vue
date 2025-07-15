@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed, inject, ref } from 'vue'
 
 const selectedObjective = inject<Ref<string>>('selectedObjective')!
 const objectiveType = inject<Ref<string>>('objectiveType')!
@@ -7,6 +7,7 @@ const formula = inject<Ref<string>>('formula')!
 const customFunctions = inject<Ref<Array<{ formula: string }>>>('customFunctions')!
 
 const numberOfWells = inject<Readonly<Ref<number>>>('numberOfWells')!
+const selectedWells = inject<Ref<number[]>>('selectedWells', ref([]))
 
 const objectives = [
   'Minimum Length',
@@ -16,6 +17,14 @@ const objectives = [
 const isCustomObjective = computed(() => selectedObjective.value === 'Custom Function')
 const showTable = computed(() => isCustomObjective.value && objectiveType.value === 'specify')
 
+// 检查井是否被选中
+const isWellSelected = (wellIndex: number): boolean => {
+  const wellNumber = wellIndex + 1
+  return selectedWells.value.includes(wellNumber)
+}
+
+// 注入Select Wells启用状态
+const selectWellsEnabled = inject<Ref<boolean>>('selectWellsEnabled', ref(false))
 </script>
 
 <template>
@@ -79,7 +88,10 @@ const showTable = computed(() => isCustomObjective.value && objectiveType.value 
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(func, index) in customFunctions" :key="index" class="border-b last:border-b-0">
+            <tr v-for="(func, index) in customFunctions" :key="index" class="border-b last:border-b-0" :class="{ 
+                'selected-well-row': isWellSelected(index) && !selectWellsEnabled,
+                'selected-well-row-orange': isWellSelected(index) && selectWellsEnabled
+              }">
               <td class="py-1.5 px-2 border-r text-center">{{ index + 1 }}</td>
               <td class="py-1.5 px-2">
                 <input
@@ -118,3 +130,7 @@ const showTable = computed(() => isCustomObjective.value && objectiveType.value 
     </div>
   </div>
 </template>
+
+<style scoped>
+/* 组件特定的样式可以在这里添加 */
+</style>

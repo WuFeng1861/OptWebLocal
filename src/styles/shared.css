@@ -121,3 +121,39 @@
   overflow-y: auto;
   padding-bottom: 1rem;
 }
+
+/* 选中井的通用样式 - 蓝色主题 */
+.selected-well-row {
+  @apply bg-blue-100 border-l-4 border-l-blue-500;
+}
+
+.selected-well-row td {
+  @apply bg-blue-100;
+}
+
+.selected-well-input {
+  @apply bg-blue-100 border-blue-400 focus:border-blue-600 focus:ring-blue-300;
+}
+
+/* 选中井的通用样式 - 橙色主题 */
+.selected-well-row-orange {
+  @apply bg-orange-100 border-l-4 border-l-orange-500;
+}
+
+.selected-well-row-orange td {
+  @apply bg-orange-100;
+}
+
+.selected-well-input-orange {
+  @apply bg-orange-100 border-orange-400 focus:border-orange-600 focus:ring-orange-300;
+}
+
+/* OilfieldLayoutTree 选中井样式 - 蓝色主题 */
+.selected-well {
+  @apply bg-blue-200 border border-blue-400 rounded;
+}
+
+/* OilfieldLayoutTree 选中井样式 - 橙色主题 */
+.selected-well-orange {
+  @apply bg-orange-200 border border-orange-400 rounded;
+}
