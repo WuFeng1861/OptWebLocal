@@ -1,4 +1,4 @@
-import axios from 'axios'
+import request from './request'
 import type { 
   Point, 
   KickoffPoint, 
