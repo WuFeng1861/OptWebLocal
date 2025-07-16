@@ -247,7 +247,9 @@ const handleOpenFile = async () => {
   try {
     let content = await window.ipcRenderer.openFile()
     // 将NaN替换成null
-    content = content.replace(/NaN/g, 'null')
+    if (content != null) {
+      content = content.replace(/NaN/g, 'null');
+    }
     if (content) {
       const data = JSON.parse(content)
       const fieldOptBlock = data['FIELDOPT INPUT BLOCK']
