@@ -1,5 +1,5 @@
 import {eventBus} from '../utils';
-import {getSiteKickOffData} from '../services/dataTemp';
+// import {getSiteKickOffData} from '../services/dataTemp';
 import type {Ref} from 'vue';
 import {KickoffPoint} from '../types';
 
@@ -11,9 +11,9 @@ export const useKickoffListen = (kickoffPointsRef:Ref<KickoffPoint[]>) => {
       return;
     }
     console.log(`Well ${wellNumber} is moved to site ${toSiteId}`)
-    const targetKickOffData = getSiteKickOffData(toSiteId);
-    kickoffPointsRef.value[wellNumber - 1].pkx = targetKickOffData.pkx;
-    kickoffPointsRef.value[wellNumber - 1].pky = targetKickOffData.pky;
+    // const targetKickOffData = getSiteKickOffData(toSiteId);
+    // kickoffPointsRef.value[wellNumber - 1].pkx = targetKickOffData.pkx;
+    // kickoffPointsRef.value[wellNumber - 1].pky = targetKickOffData.pky;
   })
   
   eventBus.on('updateCurvesData', (data) => {
