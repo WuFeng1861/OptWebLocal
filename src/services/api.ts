@@ -277,7 +277,7 @@ export function buildRequestData(
 export async function sendComputeRequest(requestData: any) {
   try {
     const response = await request.post('/get_1site', requestData)
-    return response.data
+    return response;
   } catch (error) {
     console.error('Error:', error)
     throw error
