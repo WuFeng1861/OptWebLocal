@@ -275,12 +275,12 @@ export function buildRequestData(
 }
 
 export async function sendComputeRequest(requestData: any) {
-  // try {
-  //   const response = await axios.post('/api/compute', requestData)
-  //   return response.data
-  // } catch (error) {
-  //   console.error('Error:', error)
-  //   throw error
-  // }
+  try {
+    const response = await request.post('/get_1site', requestData)
+    return response.data
+  } catch (error) {
+    console.error('Error:', error)
+    throw error
+  }
   console.log(JSON.stringify(requestData));
 }
