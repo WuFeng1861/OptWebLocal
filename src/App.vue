@@ -12,7 +12,7 @@ import type {
 } from './types'
 import ConfigurationPanel from './components/ConfigurationPanel.vue'
 import OilfieldLayoutTree from './components/OilfieldLayoutTree.vue'
-import VisualizationPanel from './components/VisualizationPanel.vue'
+// import VisualizationPanel from './components/VisualizationPanel.vue'
 import {useKickoffListen} from './composables/useKickoffListen';
 
 const activeTab = ref('completion-intervals')
@@ -462,7 +462,7 @@ useKickoffListen(kickoffPoints);
       <ConfigurationPanel :number-of-wells="numberOfWells" />
 
       <!--&lt;!&ndash; Right Panel &ndash;&gt;-->
-      <VisualizationPanel />
+      <!--<VisualizationPanel />-->
     </div>
   </div>
 </template>
