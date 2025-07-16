@@ -20,6 +20,5 @@ export const useKickoffListen = (kickoffPointsRef:Ref<KickoffPoint[]>) => {
     let {index, pkx, pky, pkz} = data;
     kickoffPointsRef.value[index].pkx = pkx;
     kickoffPointsRef.value[index].pky = pky;
-    kickoffPointsRef.value[index].pkz = pkz;
   })
 }
